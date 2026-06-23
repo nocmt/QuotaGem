@@ -390,12 +390,12 @@ function applyPanelScale(window: BrowserWindow | null): void {
 function syncWindowLayouts(): void {
   if (expandedWindow) {
     applyPanelScale(expandedWindow);
-    positionWindow(expandedWindow, "expanded");
+    positionWindow(expandedWindow, "expanded", { preservePosition: true });
   }
 
   if (compactWindow) {
     applyPanelScale(compactWindow);
-    positionWindow(compactWindow, "compact");
+    positionWindow(compactWindow, "compact", { preservePosition: true });
   }
 }
 
@@ -486,6 +486,7 @@ function getVisibleProviderIds(): ProviderId[] {
 function positionWindow(
   window: BrowserWindow,
   mode: "expanded" | "compact",
+  options: { preservePosition?: boolean } = {},
 ) {
   const workArea = screen.getPrimaryDisplay().workArea;
   const size = getPanelSize({
@@ -493,6 +494,7 @@ function positionWindow(
     panelScale: getCurrentPanelScale(),
     expandedWindowHeight,
   });
+  const currentBounds = options.preservePosition ? window.getBounds() : null;
 
   const wasResizable = window.isResizable();
   if (!wasResizable) {
@@ -502,8 +504,8 @@ function positionWindow(
   window.setBounds({
     width: size.width,
     height: size.height,
-    x: workArea.x + workArea.width - size.width - WINDOW_MARGIN,
-    y: workArea.y + workArea.height - size.height - WINDOW_MARGIN,
+    x: currentBounds?.x ?? workArea.x + workArea.width - size.width - WINDOW_MARGIN,
+    y: currentBounds?.y ?? workArea.y + workArea.height - size.height - WINDOW_MARGIN,
   });
 
   if (!wasResizable) {
@@ -548,7 +550,7 @@ app.whenReady().then(() => {
       expandedWindowHeight = nextHeight;
 
       if (expandedWindow) {
-        positionWindow(expandedWindow, "expanded");
+        positionWindow(expandedWindow, "expanded", { preservePosition: true });
       }
     },
   );
@@ -641,6 +643,9 @@ app.whenReady().then(() => {
         launchAtLoginRuntime,
       );
       configureAutoRefresh();
+      console.info(
+        `【窗口布局】保存设置后同步窗口尺寸：preferredDisplayMode=${preferences.preferredDisplayMode}, panelScale=${preferences.panelScale}, preservePosition=true`,
+      );
       syncWindowLayouts();
 
       broadcastRefresh();
