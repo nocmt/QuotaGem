@@ -24,8 +24,31 @@ const SHARED_METRIC_COLORS = {
   "--metric-danger-end": "#dea0a7",
 } as const;
 
+const DEFAULT_THEME_OVERRIDES = {
+  "--panel-card-alpha": "0.3",
+  "--panel-history-card-alpha": "0.18",
+  "--panel-empty-card-alpha": "0.14",
+  "--panel-primary-button-rgb": "var(--panel-button-rgb)",
+  "--panel-primary-button-border-rgb": "var(--panel-button-border-rgb)",
+  "--panel-primary-button-text-rgb": "var(--panel-button-text-rgb)",
+  "--panel-compact-button-alpha": "0.48",
+  "--panel-compact-button-hover-alpha": "0.62",
+  "--panel-checkbox-rgb": "var(--panel-accent-rgb)",
+  "--panel-checkbox-border-rgb": "var(--panel-border-rgb)",
+  "--panel-checkbox-bg-rgb": "var(--panel-input-rgb)",
+  "--panel-checkbox-mark-rgb": "var(--panel-button-text-rgb)",
+  "--panel-tab-rgb": "var(--panel-input-rgb)",
+  "--panel-tab-active-rgb": "var(--panel-button-rgb)",
+  "--panel-tab-border-rgb": "var(--panel-border-rgb)",
+  "--panel-tab-active-border-rgb": "var(--panel-button-border-rgb)",
+  "--panel-tab-text-rgb": "var(--panel-muted-rgb)",
+  "--panel-tab-active-text-rgb": "var(--panel-button-text-rgb)",
+  "--panel-agy-rgb": "66, 133, 244",
+} as const;
+
 const PANEL_THEME_STYLES: Record<PanelTone, PanelThemeStyles> = {
   charcoal: {
+    ...DEFAULT_THEME_OVERRIDES,
     "--panel-color-scheme": "dark",
     "--panel-base-rgb": "24, 26, 32",
     "--panel-highlight-rgb": "255, 255, 255",
@@ -51,6 +74,7 @@ const PANEL_THEME_STYLES: Record<PanelTone, PanelThemeStyles> = {
     ...SHARED_METRIC_COLORS,
   },
   slate: {
+    ...DEFAULT_THEME_OVERRIDES,
     "--panel-color-scheme": "dark",
     "--panel-base-rgb": "33, 38, 48",
     "--panel-highlight-rgb": "214, 225, 255",
@@ -76,6 +100,7 @@ const PANEL_THEME_STYLES: Record<PanelTone, PanelThemeStyles> = {
     ...SHARED_METRIC_COLORS,
   },
   forest: {
+    ...DEFAULT_THEME_OVERRIDES,
     "--panel-color-scheme": "dark",
     "--panel-base-rgb": "39, 46, 43",
     "--panel-highlight-rgb": "236, 242, 237",
@@ -101,6 +126,7 @@ const PANEL_THEME_STYLES: Record<PanelTone, PanelThemeStyles> = {
     ...SHARED_METRIC_COLORS,
   },
   ocean: {
+    ...DEFAULT_THEME_OVERRIDES,
     "--panel-color-scheme": "dark",
     "--panel-base-rgb": "39, 50, 58",
     "--panel-highlight-rgb": "226, 234, 238",
@@ -126,6 +152,7 @@ const PANEL_THEME_STYLES: Record<PanelTone, PanelThemeStyles> = {
     ...SHARED_METRIC_COLORS,
   },
   mocha: {
+    ...DEFAULT_THEME_OVERRIDES,
     "--panel-color-scheme": "dark",
     "--panel-base-rgb": "39, 31, 28",
     "--panel-highlight-rgb": "241, 229, 218",
@@ -151,6 +178,7 @@ const PANEL_THEME_STYLES: Record<PanelTone, PanelThemeStyles> = {
     ...SHARED_METRIC_COLORS,
   },
   linen: {
+    ...DEFAULT_THEME_OVERRIDES,
     "--panel-color-scheme": "light",
     "--panel-base-rgb": "236, 228, 214",
     "--panel-highlight-rgb": "255, 250, 240",
@@ -176,6 +204,7 @@ const PANEL_THEME_STYLES: Record<PanelTone, PanelThemeStyles> = {
     ...SHARED_METRIC_COLORS,
   },
   minimal: {
+    ...DEFAULT_THEME_OVERRIDES,
     "--panel-color-scheme": "light",
     "--panel-base-rgb": "255, 255, 255",
     "--panel-highlight-rgb": "255, 255, 255",
@@ -229,6 +258,7 @@ const PANEL_THEME_STYLES: Record<PanelTone, PanelThemeStyles> = {
     "--metric-danger-end": "#ee9aa0",
   },
   mist: {
+    ...DEFAULT_THEME_OVERRIDES,
     "--panel-color-scheme": "light",
     "--panel-base-rgb": "245, 244, 241",
     "--panel-highlight-rgb": "255, 255, 253",
@@ -254,6 +284,7 @@ const PANEL_THEME_STYLES: Record<PanelTone, PanelThemeStyles> = {
     ...SHARED_METRIC_COLORS,
   },
   sand: {
+    ...DEFAULT_THEME_OVERRIDES,
     "--panel-color-scheme": "light",
     "--panel-base-rgb": "233, 220, 198",
     "--panel-highlight-rgb": "255, 248, 235",
@@ -279,6 +310,7 @@ const PANEL_THEME_STYLES: Record<PanelTone, PanelThemeStyles> = {
     ...SHARED_METRIC_COLORS,
   },
   blossom: {
+    ...DEFAULT_THEME_OVERRIDES,
     "--panel-color-scheme": "light",
     "--panel-base-rgb": "244, 236, 237",
     "--panel-highlight-rgb": "255, 248, 249",

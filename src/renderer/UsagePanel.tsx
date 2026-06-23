@@ -429,6 +429,10 @@ function UsageHistoryChart({
       canvasStyles.getPropertyValue("--panel-text-rgb").trim() || "245, 247, 251";
     const panelMutedRgb =
       canvasStyles.getPropertyValue("--panel-muted-rgb").trim() || panelTextRgb;
+    const panelCardRgb =
+      canvasStyles.getPropertyValue("--panel-card-rgb").trim() || "10, 14, 22";
+    const panelBorderRgb =
+      canvasStyles.getPropertyValue("--panel-border-rgb").trim() || panelMutedRgb;
 
     const config: ChartConfiguration<"bar", number[], string> = {
       type: "bar",
@@ -470,13 +474,13 @@ function UsageHistoryChart({
             display: false,
           },
           tooltip: {
-            backgroundColor: `rgba(${panelTextRgb}, 0.9)`,
-            bodyColor: `rgba(${canvasStyles.getPropertyValue("--panel-card-rgb").trim() || "255, 255, 255"}, 0.92)`,
-            borderColor: `rgba(${panelMutedRgb}, 0.22)`,
+            backgroundColor: `rgba(${panelCardRgb}, 0.96)`,
+            bodyColor: `rgba(${panelTextRgb}, 0.92)`,
+            borderColor: `rgba(${panelBorderRgb}, 0.24)`,
             borderWidth: 1,
             displayColors: false,
             padding: 10,
-            titleColor: `rgba(${canvasStyles.getPropertyValue("--panel-card-rgb").trim() || "255, 255, 255"}, 0.98)`,
+            titleColor: `rgba(${panelTextRgb}, 0.98)`,
             callbacks: {
               label(context) {
                 const day = chartDays[context.dataIndex];
