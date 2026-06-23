@@ -115,6 +115,28 @@ export function UsagePanel({
                 <SwitchExpandedIcon />
               </button>
               <button
+                className="icon-button icon-button--icon no-drag"
+                type="button"
+                aria-label={t(language, "refreshUsage")}
+                onClick={() => {
+                  onRefresh?.();
+                }}
+                title={t(language, "refreshUsage")}
+              >
+                <RefreshIcon />
+              </button>
+              <button
+                className="icon-button icon-button--icon no-drag"
+                type="button"
+                aria-label={t(language, "openSettings")}
+                onClick={() => {
+                  onOpenSettings?.();
+                }}
+                title={t(language, "openSettings")}
+              >
+                <SettingsIcon />
+              </button>
+              <button
                 className="icon-button icon-button--icon icon-button--close no-drag"
                 type="button"
                 aria-label={t(language, "hidePanel")}
@@ -402,6 +424,12 @@ function UsageHistoryChart({
       return;
     }
 
+    const canvasStyles = getComputedStyle(canvas);
+    const panelTextRgb =
+      canvasStyles.getPropertyValue("--panel-text-rgb").trim() || "245, 247, 251";
+    const panelMutedRgb =
+      canvasStyles.getPropertyValue("--panel-muted-rgb").trim() || panelTextRgb;
+
     const config: ChartConfiguration<"bar", number[], string> = {
       type: "bar",
       data: {
@@ -442,13 +470,13 @@ function UsageHistoryChart({
             display: false,
           },
           tooltip: {
-            backgroundColor: "rgba(15, 17, 23, 0.96)",
-            bodyColor: "rgba(245, 247, 251, 0.88)",
-            borderColor: "rgba(255, 255, 255, 0.14)",
+            backgroundColor: `rgba(${panelTextRgb}, 0.9)`,
+            bodyColor: `rgba(${canvasStyles.getPropertyValue("--panel-card-rgb").trim() || "255, 255, 255"}, 0.92)`,
+            borderColor: `rgba(${panelMutedRgb}, 0.22)`,
             borderWidth: 1,
             displayColors: false,
             padding: 10,
-            titleColor: "rgba(245, 247, 251, 0.96)",
+            titleColor: `rgba(${canvasStyles.getPropertyValue("--panel-card-rgb").trim() || "255, 255, 255"}, 0.98)`,
             callbacks: {
               label(context) {
                 const day = chartDays[context.dataIndex];
@@ -472,7 +500,7 @@ function UsageHistoryChart({
               display: false,
             },
             ticks: {
-              color: "rgba(245, 247, 251, 0.7)",
+              color: `rgba(${panelMutedRgb}, 0.82)`,
               font: {
                 size: 11,
                 weight: 600,

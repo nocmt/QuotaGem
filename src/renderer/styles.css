@@ -416,6 +416,11 @@ select {
   background: rgba(var(--panel-primary-button-rgb), var(--panel-control-hover-alpha));
 }
 
+.settings-actions .icon-button:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
 .toolbar-icon {
   width: 14px;
   height: 14px;
@@ -457,7 +462,7 @@ select {
   align-items: flex-start;
   gap: 10px;
   min-height: 28px;
-  padding-right: 86px;
+  padding-right: 172px;
 }
 
 .compact-widget__identity {
@@ -953,13 +958,38 @@ select {
   font-size: 12px;
 }
 
+.settings-field input:not([type="checkbox"]):focus,
+.settings-field select:focus {
+  outline: none;
+  border-color: rgba(var(--panel-border-rgb), 0.38);
+  box-shadow: none;
+}
+
 .settings-field select,
 .settings-field option {
   color-scheme: var(--panel-color-scheme);
 }
 
 .settings-field select {
+  appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, rgba(var(--panel-muted-rgb), 0.82) 50%),
+    linear-gradient(135deg, rgba(var(--panel-muted-rgb), 0.82) 50%, transparent 50%);
+  background-position:
+    calc(100% - 22px) 50%,
+    calc(100% - 16px) 50%;
+  background-size:
+    6px 6px,
+    6px 6px;
+  background-repeat: no-repeat;
   color: rgb(var(--panel-text-rgb));
+  padding-right: 52px;
+}
+
+.settings-field select[data-open="true"] {
+  background-image:
+    linear-gradient(135deg, transparent 50%, rgba(var(--panel-muted-rgb), 0.86) 50%),
+    linear-gradient(45deg, rgba(var(--panel-muted-rgb), 0.86) 50%, transparent 50%);
 }
 
 .settings-field option {

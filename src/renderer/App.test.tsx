@@ -67,6 +67,8 @@ function createDashboardState(
 
 describe("App", () => {
   beforeEach(() => {
+    window.history.replaceState(null, "", "/");
+
     const state = createDashboardState();
 
     window.trayUsageWidget = {
@@ -494,7 +496,7 @@ describe("App", () => {
     rectSpy.mockRestore();
   });
 
-  it("tells the main process to keep the full height while settings are open", async () => {
+  it("tells the main process to keep the current expanded height while settings are open", async () => {
     const rectSpy = vi
       .spyOn(HTMLElement.prototype, "getBoundingClientRect")
       .mockReturnValue({
@@ -535,6 +537,19 @@ describe("App", () => {
     );
 
     expect(screen.queryByText("10%")).not.toBeInTheDocument();
+  });
+
+  it("opens settings in place from the compact surface toolbar", async () => {
+    window.history.replaceState(null, "", "/?mode=compact");
+
+    render(<App />);
+
+    await userEvent.click(
+      await screen.findByRole("button", { name: "Open settings" }),
+    );
+
+    expect(await screen.findByRole("heading", { name: "Settings" })).toBeInTheDocument();
+    expect(screen.queryByText("Updated just now")).not.toBeInTheDocument();
   });
 
   it("hides manual Claude credential fields from settings", async () => {

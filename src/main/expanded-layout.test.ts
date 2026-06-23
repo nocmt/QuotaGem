@@ -21,12 +21,12 @@ describe("getExpandedWindowHeight", () => {
     ).toBe(850);
   });
 
-  it("keeps the full height while settings are open", () => {
+  it("keeps the measured height while settings are open", () => {
     expect(
       getExpandedWindowHeight({
         contentHeight: 318,
         settingsOpen: true,
       }),
-    ).toBe(850);
+    ).toBe(318);
   });
 });

@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 
 import type {
@@ -30,6 +30,14 @@ type GeneralSettingsTab = "behavior" | "alerts" | "time" | "appearance";
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
+}
+
+function getPanelTransparencyFromOpacity(panelOpacity: number) {
+  return clamp(100 - panelOpacity, 0, 100);
+}
+
+function getPanelOpacityFromTransparency(panelTransparency: number) {
+  return clamp(100 - panelTransparency, 0, 100);
 }
 
 const DEFAULT_PROVIDERS: NormalizedProviderUsage[] = [
@@ -151,11 +159,13 @@ function UsageDashboardApp() {
       antigravityShowRemainingUsage: false,
     },
   });
+  const [stateReady, setStateReady] = useState(false);
   const [loading, setLoading] = useState(true);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsTab, setSettingsTab] = useState<SettingsTab>("general");
   const [generalSettingsTab, setGeneralSettingsTab] = useState<GeneralSettingsTab>("behavior");
   const [settingsNotice, setSettingsNotice] = useState("");
+  const [savingSettings, setSavingSettings] = useState(false);
   const [connectingClaude, setConnectingClaude] = useState(false);
   const [connectingAntigravity, setConnectingAntigravity] = useState(false);
   const [draftPreferences, setDraftPreferences] = useState(
@@ -163,8 +173,47 @@ function UsageDashboardApp() {
   );
   const expandedPanelRef = useRef<HTMLElement | null>(null);
   const lastExpandedContentHeightRef = useRef(0);
+  const openSettingsSelectRef = useRef<HTMLSelectElement | null>(null);
 
   const surfaceMode = useMemo(() => getSurfaceMode(), []);
+
+  const closeSettingsSelect = useCallback(() => {
+    if (!openSettingsSelectRef.current) {
+      return;
+    }
+
+    openSettingsSelectRef.current.removeAttribute("data-open");
+    openSettingsSelectRef.current = null;
+  }, []);
+
+  const openSettingsSelect = useCallback((select: HTMLSelectElement) => {
+    if (openSettingsSelectRef.current === select) {
+      select.setAttribute("data-open", "true");
+      return;
+    }
+
+    closeSettingsSelect();
+    select.setAttribute("data-open", "true");
+    openSettingsSelectRef.current = select;
+  }, [closeSettingsSelect]);
+
+  const openSettingsSheet = useCallback(() => {
+    const expandedPanel = expandedPanelRef.current;
+    const measuredHeight = expandedPanel
+      ? Math.ceil(expandedPanel.getBoundingClientRect().height + 28)
+      : 0;
+
+    if (measuredHeight > 0) {
+      lastExpandedContentHeightRef.current = measuredHeight;
+    }
+
+    closeSettingsSelect();
+    setSettingsNotice("");
+    setDraftPreferences(dashboardState.preferences);
+    setSettingsTab("general");
+    setGeneralSettingsTab("behavior");
+    setSettingsOpen(true);
+  }, [closeSettingsSelect, dashboardState.preferences]);
 
   async function loadState() {
     setLoading(true);
@@ -173,6 +222,7 @@ function UsageDashboardApp() {
       setDashboardState(nextState);
       setDraftPreferences(nextState.preferences);
     } finally {
+      setStateReady(true);
       setLoading(false);
     }
   }
@@ -188,6 +238,12 @@ function UsageDashboardApp() {
       unsubscribe();
     };
   }, []);
+
+  useEffect(() => {
+    if (!settingsOpen) {
+      closeSettingsSelect();
+    }
+  }, [closeSettingsSelect, settingsOpen]);
 
   const visualPreferences = settingsOpen
     ? draftPreferences
@@ -230,6 +286,10 @@ function UsageDashboardApp() {
       return;
     }
 
+    if (!stateReady && !settingsOpen) {
+      return;
+    }
+
     const panel = expandedPanelRef.current;
     const measuredHeight = panel
       ? Math.ceil(panel.getBoundingClientRect().height + 28)
@@ -251,13 +311,14 @@ function UsageDashboardApp() {
     dashboardState.lastUpdatedLabel,
     loading,
     settingsOpen,
+    stateReady,
     surfaceMode,
     visibleProviders,
   ]);
 
   return (
     <div style={panelStyle}>
-      {!(surfaceMode === "expanded" && settingsOpen) ? (
+      {stateReady && !settingsOpen ? (
         <UsagePanel
           mode={surfaceMode}
           panelRef={surfaceMode === "expanded" ? expandedPanelRef : undefined}
@@ -267,14 +328,7 @@ function UsageDashboardApp() {
           lastUpdatedLabel={dashboardState.lastUpdatedLabel}
           onRefresh={() => void loadState()}
           onOpenSettings={() => {
-            setSettingsNotice("");
-            setSettingsOpen((current) => {
-              if (!current) {
-                setSettingsTab("general");
-                setGeneralSettingsTab("behavior");
-              }
-              return !current;
-            });
+            openSettingsSheet();
           }}
           onOpenExpanded={() => {
             void window.trayUsageWidget.openExpandedPanel();
@@ -287,8 +341,47 @@ function UsageDashboardApp() {
           }}
         />
       ) : null}
-      {surfaceMode === "expanded" && settingsOpen ? (
-        <aside className="settings-sheet">
+      {settingsOpen ? (
+        <aside
+          className="settings-sheet"
+          onBlurCapture={(event) => {
+            if (event.target instanceof HTMLSelectElement) {
+              closeSettingsSelect();
+            }
+          }}
+          onChangeCapture={(event) => {
+            if (event.target instanceof HTMLSelectElement) {
+              closeSettingsSelect();
+            }
+          }}
+          onKeyDownCapture={(event) => {
+            if (!(event.target instanceof HTMLSelectElement)) {
+              return;
+            }
+
+            if (event.key === "Escape" || event.key === "Tab") {
+              closeSettingsSelect();
+              return;
+            }
+
+            if (
+              event.key === "Enter" ||
+              event.key === " " ||
+              event.key === "ArrowDown" ||
+              event.key === "ArrowUp"
+            ) {
+              openSettingsSelect(event.target);
+            }
+          }}
+          onPointerDownCapture={(event) => {
+            if (event.target instanceof HTMLSelectElement) {
+              openSettingsSelect(event.target);
+              return;
+            }
+
+            closeSettingsSelect();
+          }}
+        >
           <div className="settings-sheet__content">
             <div className="settings-sheet__header">
               <h2>{t(language, "settings")}</h2>
@@ -297,6 +390,7 @@ function UsageDashboardApp() {
                 type="button"
                 aria-label={t(language, "closeSettings")}
                 onClick={() => {
+                  setDraftPreferences(dashboardState.preferences);
                   setSettingsOpen(false);
                 }}
               >
@@ -617,17 +711,22 @@ function UsageDashboardApp() {
                       />
                     </label>
                     <label className="settings-field">
-                      <span>{t(language, "panelTransparency")}: {draftPreferences.panelOpacity}%</span>
+                      <span>
+                        {t(language, "panelTransparency")}:{" "}
+                        {getPanelTransparencyFromOpacity(draftPreferences.panelOpacity)}%
+                      </span>
                       <input
                         type="range"
-                        min="70"
-                        max="96"
+                        min="0"
+                        max="30"
                         step="2"
-                        value={draftPreferences.panelOpacity}
+                        value={getPanelTransparencyFromOpacity(draftPreferences.panelOpacity)}
                         onChange={(event) => {
                           setDraftPreferences((current) => ({
                             ...current,
-                            panelOpacity: Number(event.target.value),
+                            panelOpacity: getPanelOpacityFromTransparency(
+                              Number(event.target.value),
+                            ),
                           }));
                         }}
                       />
@@ -759,19 +858,6 @@ function UsageDashboardApp() {
                 role="tabpanel"
               >
                 <p className="settings-sheet__hint">{t(language, "claudeSettingsHint")}</p>
-                <label className="checkbox-row">
-                  <span>{t(language, "codexShowRemainingUsage")}</span>
-                  <input
-                    type="checkbox"
-                    checked={draftPreferences.claudeShowRemainingUsage}
-                    onChange={(event) => {
-                      setDraftPreferences((current) => ({
-                        ...current,
-                        claudeShowRemainingUsage: event.target.checked,
-                      }));
-                    }}
-                  />
-                </label>
                 <p className="settings-sheet__hint">
                   {t(language, "recommendedConnectClaude")}
                 </p>
@@ -807,6 +893,20 @@ function UsageDashboardApp() {
                       : t(language, "connectClaude")}
                   </button>
                 </div>
+                <label className="settings-field settings-field--checkbox">
+                  <span>{t(language, "codexShowRemainingUsage")}</span>
+                  <input
+                    className="settings-checkbox"
+                    type="checkbox"
+                    checked={draftPreferences.claudeShowRemainingUsage}
+                    onChange={(event) => {
+                      setDraftPreferences((current) => ({
+                        ...current,
+                        claudeShowRemainingUsage: event.target.checked,
+                      }));
+                    }}
+                  />
+                </label>
               </section>
             ) : null}
             {settingsTab === "antigravity" ? (
@@ -816,19 +916,6 @@ function UsageDashboardApp() {
                 role="tabpanel"
               >
                 <p className="settings-sheet__hint">{t(language, "antigravitySettingsHint")}</p>
-                <label className="checkbox-row">
-                  <span>{t(language, "codexShowRemainingUsage")}</span>
-                  <input
-                    type="checkbox"
-                    checked={draftPreferences.antigravityShowRemainingUsage}
-                    onChange={(event) => {
-                      setDraftPreferences((current) => ({
-                        ...current,
-                        antigravityShowRemainingUsage: event.target.checked,
-                      }));
-                    }}
-                  />
-                </label>
                 <div className="settings-actions settings-actions--top">
                   <button
                     className="icon-button"
@@ -861,6 +948,20 @@ function UsageDashboardApp() {
                       : t(language, "connectAntigravity")}
                   </button>
                 </div>
+                <label className="settings-field settings-field--checkbox">
+                  <span>{t(language, "codexShowRemainingUsage")}</span>
+                  <input
+                    className="settings-checkbox"
+                    type="checkbox"
+                    checked={draftPreferences.antigravityShowRemainingUsage}
+                    onChange={(event) => {
+                      setDraftPreferences((current) => ({
+                        ...current,
+                        antigravityShowRemainingUsage: event.target.checked,
+                      }));
+                    }}
+                  />
+                </label>
               </section>
             ) : null}
             {settingsNotice ? (
@@ -871,11 +972,14 @@ function UsageDashboardApp() {
             <button
               className="icon-button"
               type="button"
+              disabled={savingSettings}
+              aria-busy={savingSettings}
               onClick={() => {
+                setSavingSettings(true);
+                setSettingsNotice("");
                 void window.trayUsageWidget
                   .saveSettings(draftPreferences)
                   .then((nextState) => {
-                    setSettingsNotice(t(draftPreferences.language, "savedClaudeAccepted"));
                     setDashboardState(nextState);
                     setDraftPreferences(nextState.preferences);
                     setSettingsOpen(false);
@@ -886,10 +990,15 @@ function UsageDashboardApp() {
                         ? error.message
                         : t(language, "couldNotSaveClaudeSettings");
                     setSettingsNotice(message);
+                  })
+                  .finally(() => {
+                    setSavingSettings(false);
                   });
               }}
             >
-              {t(language, "savePreferences")}
+              {savingSettings
+                ? t(language, "savingPreferences")
+                : t(language, "savePreferences")}
             </button>
           </div>
         </aside>

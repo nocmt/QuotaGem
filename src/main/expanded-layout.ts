@@ -3,15 +3,11 @@ const EXPANDED_PANEL_MIN_HEIGHT = 220;
 
 export function getExpandedWindowHeight({
   contentHeight,
-  settingsOpen,
+  settingsOpen: _settingsOpen,
 }: {
   contentHeight: number;
   settingsOpen: boolean;
 }): number {
-  if (settingsOpen) {
-    return EXPANDED_PANEL_MAX_HEIGHT;
-  }
-
   if (!Number.isFinite(contentHeight) || contentHeight <= 0) {
     return EXPANDED_PANEL_MAX_HEIGHT;
   }

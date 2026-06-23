@@ -123,6 +123,7 @@ type TranslationKey =
   | "sand"
   | "blossom"
   | "savePreferences"
+  | "savingPreferences"
   | "savedClaudeAccepted"
   | "couldNotSaveClaudeSettings"
   | "recommendedConnectClaude"
@@ -230,6 +231,7 @@ const translations: Record<WidgetLanguage, Record<TranslationKey, string>> = {
     sand: "Sand",
     blossom: "Blossom",
     savePreferences: "Save preferences",
+    savingPreferences: "Saving...",
     savedClaudeAccepted: "Preferences saved.",
     couldNotSaveClaudeSettings: "Could not save preferences.",
     recommendedConnectClaude:
@@ -343,6 +345,7 @@ const translations: Record<WidgetLanguage, Record<TranslationKey, string>> = {
     sand: "沙色",
     blossom: "淡粉色",
     savePreferences: "儲存設定",
+    savingPreferences: "儲存中...",
     savedClaudeAccepted: "設定已儲存。",
     couldNotSaveClaudeSettings: "無法儲存設定。",
     recommendedConnectClaude:
@@ -455,6 +458,7 @@ const translations: Record<WidgetLanguage, Record<TranslationKey, string>> = {
     sand: "沙色",
     blossom: "淡粉色",
     savePreferences: "保存设置",
+    savingPreferences: "保存中...",
     savedClaudeAccepted: "设置已保存。",
     couldNotSaveClaudeSettings: "无法保存设置。",
     recommendedConnectClaude:
