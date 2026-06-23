@@ -119,6 +119,31 @@ const localCodexProvider: NormalizedProviderUsage = {
   lastUpdated: "2026-06-23T02:22:38.325Z",
 };
 
+const agyProvider: NormalizedProviderUsage = {
+  provider: "agy",
+  displayName: "Agy",
+  health: "available",
+  session: {
+    label: "Session",
+    percent: 18,
+    displayPercent: 18,
+    percentLabel: "18%",
+    barMode: "used",
+    resetLabel: "2026-06-24 00:00 UTC",
+    level: "normal",
+  },
+  weekly: {
+    label: "Weekly",
+    percent: 34,
+    displayPercent: 34,
+    percentLabel: "34%",
+    barMode: "used",
+    resetLabel: "2026-06-29 00:00 UTC",
+    level: "normal",
+  },
+  lastUpdated: "2026-06-23T02:22:38.325Z",
+};
+
 const remainingCodexProvider: NormalizedProviderUsage = {
   ...localCodexProvider,
   session: {
@@ -333,7 +358,7 @@ describe("UsagePanel", () => {
     const { container } = render(
       <UsagePanel
         mode="compact"
-        providers={[localCodexProvider]}
+        providers={[providers[0], localCodexProvider, agyProvider]}
         language="en"
         loading={false}
         lastUpdatedLabel="Updated just now"
@@ -343,10 +368,50 @@ describe("UsagePanel", () => {
     expect(screen.getByText("History: 801.6M ($542.21)")).toBeInTheDocument();
     expect(screen.getByText("This week: 12.4M ($8.12)")).toBeInTheDocument();
     expect(screen.getByText("Today: 1.8M ($1.02)")).toBeInTheDocument();
+    expect(
+      Array.from(container.querySelectorAll(".usage-history__summary span")).map(
+        (element) => element.textContent,
+      ),
+    ).toEqual([
+      "Today: 1.8M ($1.02)",
+      "This week: 12.4M ($8.12)",
+      "History: 801.6M ($542.21)",
+    ]);
+    expect(screen.getByRole("button", { name: "Claude" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Codex" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Antigravity" })).toBeInTheDocument();
     expect(screen.getByRole("img", { name: "Today: 1.8M ($1.02)" })).toBeInTheDocument();
     expect(container.querySelector(".compact-widget__mark")).not.toBeInTheDocument();
     expect(container.querySelector(".usage-history__canvas")).toBeInTheDocument();
     expect(container.querySelector(".usage-history__line")).not.toBeInTheDocument();
+  });
+
+  it("shows an empty state when the selected wide-panel history provider has no daily token history", async () => {
+    const rendererModule = await import("./UsagePanel");
+    const UsagePanel = Reflect.get(rendererModule, "UsagePanel");
+
+    expect(typeof UsagePanel).toBe("function");
+
+    if (typeof UsagePanel !== "function") {
+      return;
+    }
+
+    const { container } = render(
+      <UsagePanel
+        mode="compact"
+        providers={[providers[0], localCodexProvider, agyProvider]}
+        language="en"
+        loading={false}
+        lastUpdatedLabel="Updated just now"
+      />,
+    );
+
+    await userEvent.click(screen.getByRole("button", { name: "Claude" }));
+
+    expect(
+      screen.getByText("No daily token and cost history is available for this provider."),
+    ).toBeInTheDocument();
+    expect(container.querySelector(".usage-history__canvas")).not.toBeInTheDocument();
   });
 
   it("renders local Codex usage details in the compact panel", async () => {

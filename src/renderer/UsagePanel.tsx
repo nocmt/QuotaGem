@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, type Ref } from "react";
+import { useEffect, useMemo, useRef, useState, type Ref } from "react";
 import {
   BarController,
   BarElement,
@@ -10,7 +10,7 @@ import {
 } from "chart.js";
 
 import { t, type WidgetLanguage } from "../shared/i18n";
-import type { NormalizedProviderUsage } from "../shared/usage";
+import type { NormalizedProviderUsage, ProviderId } from "../shared/usage";
 
 Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip);
 
@@ -50,6 +50,38 @@ export function UsagePanel({
   onOpenCompact,
   onClose,
 }: UsagePanelProps) {
+  const [selectedHistoryProviderId, setSelectedHistoryProviderId] =
+    useState<ProviderId>("codex");
+  const historyProviders = useMemo(
+    () =>
+      providers.filter((provider) =>
+        ["claude", "codex", "agy"].includes(provider.provider),
+      ),
+    [providers],
+  );
+  const hasHistoryUsageProvider = historyProviders.some(
+    (provider) => provider.localUsage,
+  );
+
+  useEffect(() => {
+    if (historyProviders.length === 0) {
+      return;
+    }
+
+    if (
+      historyProviders.some(
+        (provider) => provider.provider === selectedHistoryProviderId,
+      )
+    ) {
+      return;
+    }
+
+    setSelectedHistoryProviderId(
+      historyProviders.find((provider) => provider.localUsage)?.provider ??
+        historyProviders[0].provider,
+    );
+  }, [historyProviders, selectedHistoryProviderId]);
+
   if (mode === "compact") {
     const colClass =
       providers.length >= 3
@@ -57,8 +89,6 @@ export function UsagePanel({
         : providers.length === 1
           ? " compact-widget__columns--single"
           : "";
-    const localUsage = providers.find((provider) => provider.localUsage)
-      ?.localUsage;
 
     return (
       <main className="compact-shell">
@@ -97,7 +127,14 @@ export function UsagePanel({
               </button>
             </div>
           </div>
-          {localUsage ? <UsageHistoryChart localUsage={localUsage} /> : null}
+          {hasHistoryUsageProvider ? (
+            <UsageHistoryChart
+              language={language}
+              providers={historyProviders}
+              selectedProviderId={selectedHistoryProviderId}
+              onSelectedProviderChange={setSelectedHistoryProviderId}
+            />
+          ) : null}
           <div className="compact-widget__content no-drag">
             <div className={`compact-widget__columns${colClass}`}>
               {providers.map((provider) => (
@@ -325,14 +362,25 @@ export function UsagePanel({
 }
 
 function UsageHistoryChart({
-  localUsage,
+  language,
+  providers,
+  selectedProviderId,
+  onSelectedProviderChange,
 }: {
-  localUsage: NonNullable<NormalizedProviderUsage["localUsage"]>;
+  language: WidgetLanguage;
+  providers: NormalizedProviderUsage[];
+  selectedProviderId: ProviderId;
+  onSelectedProviderChange: (provider: ProviderId) => void;
 }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const selectedProvider =
+    providers.find((provider) => provider.provider === selectedProviderId) ??
+    providers.find((provider) => provider.localUsage) ??
+    providers[0];
+  const localUsage = selectedProvider?.localUsage;
   const chartDays = useMemo(
-    () => localUsage.recentDailyUsage,
-    [localUsage.recentDailyUsage],
+    () => localUsage?.recentDailyUsage ?? [],
+    [localUsage?.recentDailyUsage],
   );
 
   useEffect(() => {
@@ -453,22 +501,59 @@ function UsageHistoryChart({
     };
   }, [chartDays]);
 
+  if (!selectedProvider) {
+    return null;
+  }
+
   return (
     <section className="usage-history no-drag">
-      <div className="usage-history__summary">
-        <span>{localUsage.historyUsageLabel}</span>
-        <span>{localUsage.weeklyUsageLabel}</span>
-        <span>{localUsage.todayUsageLabel}</span>
+      <div className="usage-history__header">
+        <div className="usage-history__summary">
+          {localUsage ? (
+            <>
+              <span>{localUsage.todayUsageLabel}</span>
+              <span>{localUsage.weeklyUsageLabel}</span>
+              <span>{localUsage.historyUsageLabel}</span>
+            </>
+          ) : (
+            <span>{getHistoryProviderLabel(selectedProvider)}</span>
+          )}
+        </div>
+        <div className="usage-history__segmented" role="group">
+          {providers.map((provider) => (
+            <button
+              key={provider.provider}
+              className={`usage-history__segment${provider.provider === selectedProvider.provider ? " usage-history__segment--active" : ""}`}
+              type="button"
+              aria-pressed={provider.provider === selectedProvider.provider}
+              onClick={() => {
+                onSelectedProviderChange(provider.provider);
+              }}
+            >
+              {getHistoryProviderLabel(provider)}
+            </button>
+          ))}
+        </div>
       </div>
-      <div
-        className="usage-history__chart"
-        role="img"
-        aria-label={localUsage.todayUsageLabel}
-      >
-        <canvas className="usage-history__canvas" ref={canvasRef} />
-      </div>
+      {localUsage ? (
+        <div
+          className="usage-history__chart"
+          role="img"
+          aria-label={localUsage.todayUsageLabel}
+        >
+          <canvas className="usage-history__canvas" ref={canvasRef} />
+        </div>
+      ) : (
+        <div className="usage-history__empty">
+          {t(language, "usageHistoryUnavailable")}
+        </div>
+      )}
     </section>
   );
+}
+
+function getHistoryProviderLabel(provider: NormalizedProviderUsage) {
+  return provider.provider === "agy" ? "Antigravity" : provider.displayName;
 }
 
 function getWeatherUsageColor(costUsd: number, alpha: number) {
