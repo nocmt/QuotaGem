@@ -118,6 +118,7 @@ type TranslationKey =
   | "ocean"
   | "mocha"
   | "linen"
+  | "minimal"
   | "mist"
   | "sand"
   | "blossom"
@@ -224,6 +225,7 @@ const translations: Record<WidgetLanguage, Record<TranslationKey, string>> = {
     ocean: "Ocean",
     mocha: "Mocha",
     linen: "Linen",
+    minimal: "Minimal",
     mist: "Mist",
     sand: "Sand",
     blossom: "Blossom",
@@ -336,6 +338,7 @@ const translations: Record<WidgetLanguage, Record<TranslationKey, string>> = {
     ocean: "灰藍色",
     mocha: "摩卡棕",
     linen: "淺米色",
+    minimal: "極簡",
     mist: "霧灰色",
     sand: "沙色",
     blossom: "淡粉色",
@@ -447,6 +450,7 @@ const translations: Record<WidgetLanguage, Record<TranslationKey, string>> = {
     ocean: "灰蓝色",
     mocha: "摩卡棕",
     linen: "浅米色",
+    minimal: "极简",
     mist: "雾灰色",
     sand: "沙色",
     blossom: "淡粉色",

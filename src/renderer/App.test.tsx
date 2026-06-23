@@ -203,16 +203,18 @@ describe("App", () => {
 
     const panelTone = await screen.findByLabelText("Panel background color");
 
-    await userEvent.selectOptions(panelTone, "linen");
+    expect(screen.getByRole("option", { name: "Minimal" })).toBeInTheDocument();
+
+    await userEvent.selectOptions(panelTone, "minimal");
     await userEvent.click(screen.getByRole("button", { name: "Save preferences" }));
 
     await waitFor(() => {
-        expect(window.trayUsageWidget.saveSettings).toHaveBeenCalledWith(
-          expect.objectContaining({
-          panelTone: "linen",
-          }),
-        );
-      });
+      expect(window.trayUsageWidget.saveSettings).toHaveBeenCalledWith(
+        expect.objectContaining({
+          panelTone: "minimal",
+        }),
+      );
+    });
   });
 
   it("lets people choose a date format from settings", async () => {

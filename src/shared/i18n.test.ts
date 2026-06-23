@@ -27,6 +27,7 @@ describe("i18n", () => {
     expect(t("zh-CN", "settingsClaudeTab")).toBe("Claude");
     expect(t("zh-CN", "settingsAntigravityTab")).toBe("Antigravity");
     expect(t("zh-CN", "generalAppearanceTab")).toBe("外观");
+    expect(t("zh-CN", "minimal")).toBe("极简");
     expect(t("zh-CN", "bothProviders")).toBe("显示所有");
     expect(t("zh-CN", "agyOnly")).toBe("只显示 Antigravity");
     expect(t("zh-CN", "codexShowRemainingUsage")).toBe("显示剩余用量");
