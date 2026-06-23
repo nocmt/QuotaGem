@@ -5,6 +5,7 @@ import type { NormalizedProviderUsage } from "./usage";
 
 export type ProviderVisibility = "both" | "claude" | "codex";
 export type DateFormatPreference = "iso" | "mdy" | "dmy";
+export type CodexDataSource = "official" | "local";
 
 export interface WidgetPreferences {
   preferredDisplayMode: "expanded" | "compact";
@@ -22,6 +23,11 @@ export interface WidgetPreferences {
   panelScale: PanelScalePercent;
   panelOpacity: number;
   panelTone: PanelTone;
+  codexDataSource: CodexDataSource;
+  codexProviderMultiplier: number;
+  codexDailyLimitUsd: number;
+  codexWeeklyLimitUsd: number;
+  codexMonthlyLimitUsd: number;
 }
 
 export interface UsageDashboardState {

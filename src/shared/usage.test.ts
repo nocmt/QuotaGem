@@ -151,4 +151,69 @@ describe("normalizeProviderUsage", () => {
     expect(normalized.session.level).toBe("warning");
     expect(normalized.weekly.level).toBe("danger");
   });
+
+  it("formats local Codex token and cost details", async () => {
+    const usageModule = await import("./usage");
+    const normalizeProviderUsage = Reflect.get(
+      usageModule,
+      "normalizeProviderUsage",
+    );
+
+    expect(typeof normalizeProviderUsage).toBe("function");
+
+    if (typeof normalizeProviderUsage !== "function") {
+      return;
+    }
+
+    const snapshot: ProviderUsageSnapshot = {
+      provider: "codex",
+      displayName: "Codex",
+      sessionPercent: 0,
+      sessionResetAt: null,
+      weeklyPercent: 12,
+      weeklyResetAt: "2026-06-29T00:00:00.000Z",
+      monthlyPercent: 4,
+      monthlyResetAt: "2026-07-01T00:00:00.000Z",
+      lastUpdated: "2026-06-23T02:22:38.325Z",
+      localUsage: {
+        source: "codex-local",
+        inputTokens: 5000,
+        cachedInputTokens: 1800,
+        outputTokens: 300,
+        reasoningOutputTokens: 50,
+        totalTokens: 5300,
+        estimatedCostUsd: 0.00777,
+        dailyCostUsd: 0.001,
+        weeklyCostUsd: 0.006,
+        monthlyCostUsd: 0.00777,
+        dailyLimitUsd: 10,
+        weeklyLimitUsd: 50,
+        monthlyLimitUsd: 200,
+        providerMultiplier: 2,
+        sessionCount: 2,
+        model: "gpt-5.4-mini",
+        pricingModel: "gpt-5.4-mini",
+      },
+    };
+
+    const normalized = normalizeProviderUsage(snapshot, {
+      language: "en",
+      timeDisplay: "utc",
+      timeFormat: "24h",
+    });
+
+    expect(normalized.session.label).toBe("Daily");
+    expect(normalized.weekly.percent).toBe(12);
+    expect(normalized.monthly?.label).toBe("Monthly");
+    expect(normalized.monthly?.percent).toBe(4);
+    expect(normalized.localUsage).toEqual({
+      sourceLabel: "Local Codex data",
+      totalTokensLabel: "5.3K tokens",
+      estimatedCostLabel: "Estimated cost $0.0078",
+      multiplierLabel: "Provider multiplier x2.0",
+      modelLabel: "Pricing model gpt-5.4-mini",
+      sessionCountLabel: "2 sessions",
+      tokenBreakdownLabel: "Input/cached/output/reasoning 5K / 1.8K / 300 / 50",
+    });
+  });
 });

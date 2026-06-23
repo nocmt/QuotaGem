@@ -46,6 +46,11 @@ function createDashboardState(
       panelOpacity: 90,
       panelTone: "charcoal",
       launchAtLogin: false,
+      codexDataSource: "official",
+      codexProviderMultiplier: 1,
+      codexDailyLimitUsd: 10,
+      codexWeeklyLimitUsd: 50,
+      codexMonthlyLimitUsd: 200,
       ...overrides,
     },
   };
@@ -208,6 +213,44 @@ describe("App", () => {
       expect(window.trayUsageWidget.saveSettings).toHaveBeenCalledWith(
         expect.objectContaining({
           dateFormat: "dmy",
+        }),
+      );
+    });
+  });
+
+  it("lets people switch Codex to local data and set provider limits", async () => {
+    render(<App />);
+
+    await userEvent.click(
+      await screen.findByRole("button", { name: "Open settings" }),
+    );
+
+    const codexDataSource = await screen.findByLabelText("Codex data source");
+
+    await userEvent.selectOptions(codexDataSource, "local");
+
+    const providerMultiplier = await screen.findByLabelText(
+      "Provider multiplier: x1.0",
+    );
+
+    await userEvent.clear(providerMultiplier);
+    await userEvent.type(providerMultiplier, "1.7");
+    await userEvent.clear(screen.getByLabelText("Daily limit ($)"));
+    await userEvent.type(screen.getByLabelText("Daily limit ($)"), "12.5");
+    await userEvent.clear(screen.getByLabelText("Weekly limit ($)"));
+    await userEvent.type(screen.getByLabelText("Weekly limit ($)"), "60");
+    await userEvent.clear(screen.getByLabelText("Monthly limit ($)"));
+    await userEvent.type(screen.getByLabelText("Monthly limit ($)"), "240");
+    await userEvent.click(screen.getByRole("button", { name: "Save preferences" }));
+
+    await waitFor(() => {
+      expect(window.trayUsageWidget.saveSettings).toHaveBeenCalledWith(
+        expect.objectContaining({
+          codexDataSource: "local",
+          codexProviderMultiplier: 1.7,
+          codexDailyLimitUsd: 12.5,
+          codexWeeklyLimitUsd: 60,
+          codexMonthlyLimitUsd: 240,
         }),
       );
     });

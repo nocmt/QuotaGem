@@ -22,6 +22,13 @@ type TranslationKey =
   | "preferredDisplayMode"
   | "launchAtLogin"
   | "providerVisibility"
+  | "codexDataSource"
+  | "codexDataSourceOfficial"
+  | "codexDataSourceLocal"
+  | "codexProviderMultiplier"
+  | "codexDailyLimit"
+  | "codexWeeklyLimit"
+  | "codexMonthlyLimit"
   | "expandedPanel"
   | "compactPanel"
   | "bothProviders"
@@ -101,6 +108,13 @@ const translations: Record<WidgetLanguage, Record<TranslationKey, string>> = {
     preferredDisplayMode: "Default panel to open",
     launchAtLogin: "Launch on Windows sign-in",
     providerVisibility: "Show providers",
+    codexDataSource: "Codex data source",
+    codexDataSourceOfficial: "Official",
+    codexDataSourceLocal: "Local data",
+    codexProviderMultiplier: "Provider multiplier",
+    codexDailyLimit: "Daily limit ($)",
+    codexWeeklyLimit: "Weekly limit ($)",
+    codexMonthlyLimit: "Monthly limit ($)",
     expandedPanel: "Expanded panel",
     compactPanel: "Compact panel",
     bothProviders: "Claude + Codex",
@@ -181,6 +195,13 @@ const translations: Record<WidgetLanguage, Record<TranslationKey, string>> = {
     preferredDisplayMode: "預設開啟面板",
     launchAtLogin: "Windows 登入時啟動",
     providerVisibility: "顯示項目",
+    codexDataSource: "Codex 資料來源",
+    codexDataSourceOfficial: "官方",
+    codexDataSourceLocal: "本機資料",
+    codexProviderMultiplier: "供應商倍率",
+    codexDailyLimit: "每日限額 ($)",
+    codexWeeklyLimit: "每週限額 ($)",
+    codexMonthlyLimit: "每月限額 ($)",
     expandedPanel: "大面板",
     compactPanel: "小面板",
     bothProviders: "Claude + Codex",

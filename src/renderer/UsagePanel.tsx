@@ -106,6 +106,14 @@ export function UsagePanel({
                     percent={provider.weekly.percent}
                     resetLabel={provider.weekly.resetLabel}
                   />
+                  {provider.monthly && (
+                    <CompactMetric
+                      language={language}
+                      label={provider.monthly.label}
+                      percent={provider.monthly.percent}
+                      resetLabel={provider.monthly.resetLabel}
+                    />
+                  )}
                   {provider.thirdPartySession && (
                     <CompactMetric
                       language={language}
@@ -229,6 +237,15 @@ export function UsagePanel({
                 resetLabel={provider.weekly.resetLabel}
                 level={provider.weekly.level}
               />
+              {provider.monthly && (
+                <ProviderMetric
+                  language={language}
+                  label={provider.monthly.label}
+                  percent={provider.monthly.percent}
+                  resetLabel={provider.monthly.resetLabel}
+                  level={provider.monthly.level}
+                />
+              )}
               {provider.thirdPartySession && (
                 <ProviderMetric
                   language={language}

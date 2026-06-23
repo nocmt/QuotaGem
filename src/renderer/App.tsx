@@ -1,7 +1,11 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 
-import type { ProviderVisibility, UsageDashboardState } from "../shared/dashboard";
+import type {
+  CodexDataSource,
+  ProviderVisibility,
+  UsageDashboardState,
+} from "../shared/dashboard";
 import { t, type WidgetLanguage } from "../shared/i18n";
 import {
   getPanelScaleFromSliderIndex,
@@ -79,6 +83,11 @@ function UsageDashboardApp() {
       panelScale: 100,
       panelOpacity: 90,
       panelTone: "charcoal",
+      codexDataSource: "official",
+      codexProviderMultiplier: 1,
+      codexDailyLimitUsd: 10,
+      codexWeeklyLimitUsd: 50,
+      codexMonthlyLimitUsd: 200,
     },
   });
   const [loading, setLoading] = useState(true);
@@ -352,6 +361,81 @@ function UsageDashboardApp() {
               </select>
             </label>
             <label className="settings-field">
+              <span>{t(language, "codexDataSource")}</span>
+              <select
+                value={draftPreferences.codexDataSource}
+                onChange={(event) => {
+                  setDraftPreferences((current) => ({
+                    ...current,
+                    codexDataSource: event.target.value as CodexDataSource,
+                  }));
+                }}
+              >
+                <option value="official">{t(language, "codexDataSourceOfficial")}</option>
+                <option value="local">{t(language, "codexDataSourceLocal")}</option>
+              </select>
+            </label>
+            {draftPreferences.codexDataSource === "local" ? (
+              <>
+                <label className="settings-field">
+                  <span>
+                    {t(language, "codexProviderMultiplier")}: x
+                    {draftPreferences.codexProviderMultiplier.toFixed(1)}
+                  </span>
+                  <input
+                    type="number"
+                    min="0"
+                    max="10"
+                    step="0.1"
+                    value={draftPreferences.codexProviderMultiplier}
+                    onChange={(event) => {
+                      const nextValue = Number(event.target.value);
+                      if (!Number.isFinite(nextValue)) {
+                        return;
+                      }
+                      setDraftPreferences((current) => ({
+                        ...current,
+                        codexProviderMultiplier: Math.min(
+                          10,
+                          Math.max(0, Math.round(nextValue * 10) / 10),
+                        ),
+                      }));
+                    }}
+                  />
+                </label>
+                <CodexUsdLimitField
+                  label={t(language, "codexDailyLimit")}
+                  value={draftPreferences.codexDailyLimitUsd}
+                  onChange={(codexDailyLimitUsd) => {
+                    setDraftPreferences((current) => ({
+                      ...current,
+                      codexDailyLimitUsd,
+                    }));
+                  }}
+                />
+                <CodexUsdLimitField
+                  label={t(language, "codexWeeklyLimit")}
+                  value={draftPreferences.codexWeeklyLimitUsd}
+                  onChange={(codexWeeklyLimitUsd) => {
+                    setDraftPreferences((current) => ({
+                      ...current,
+                      codexWeeklyLimitUsd,
+                    }));
+                  }}
+                />
+                <CodexUsdLimitField
+                  label={t(language, "codexMonthlyLimit")}
+                  value={draftPreferences.codexMonthlyLimitUsd}
+                  onChange={(codexMonthlyLimitUsd) => {
+                    setDraftPreferences((current) => ({
+                      ...current,
+                      codexMonthlyLimitUsd,
+                    }));
+                  }}
+                />
+              </>
+            ) : null}
+            <label className="settings-field">
               <span>{t(language, "refreshInterval")}</span>
               <select
                 value={String(draftPreferences.refreshIntervalMinutes)}
@@ -522,6 +606,35 @@ function UsageDashboardApp() {
 }
 
 export default App;
+
+function CodexUsdLimitField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  onChange: (value: number) => void;
+}) {
+  return (
+    <label className="settings-field">
+      <span>{label}</span>
+      <input
+        type="number"
+        min="0"
+        step="0.01"
+        value={value}
+        onChange={(event) => {
+          const nextValue = Number(event.target.value);
+          if (!Number.isFinite(nextValue)) {
+            return;
+          }
+          onChange(Math.max(0, Math.round(nextValue * 100) / 100));
+        }}
+      />
+    </label>
+  );
+}
 
 function SettingsCloseIcon() {
   return (

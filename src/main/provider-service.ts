@@ -9,10 +9,18 @@ import {
   extractClaudeOrganizationId,
   extractClaudeUsage,
 } from "../providers/claude";
-import { extractLatestCodexUsage } from "../providers/codex";
+import {
+  extractLatestCodexUsage,
+  extractLocalCodexUsage,
+  normalizeCodexProviderMultiplier,
+} from "../providers/codex";
 import { extractLatestAgyUsage } from "../providers/agy";
 import { loadProviderSnapshots } from "../providers";
-import type { DateFormatPreference, UsageDashboardState } from "../shared/dashboard";
+import type {
+  CodexDataSource,
+  DateFormatPreference,
+  UsageDashboardState,
+} from "../shared/dashboard";
 import { t, type WidgetLanguage } from "../shared/i18n";
 import { normalizePanelScale } from "../shared/panel-scale";
 import type { PanelTone } from "../shared/panel-themes";
@@ -42,6 +50,11 @@ export interface AppStoreShape {
   panelScale?: number;
   panelOpacity?: number;
   panelTone?: PanelTone;
+  codexDataSource?: CodexDataSource;
+  codexProviderMultiplier?: number;
+  codexDailyLimitUsd?: number;
+  codexWeeklyLimitUsd?: number;
+  codexMonthlyLimitUsd?: number;
 }
 
 const CLAUDE_USER_AGENT =
@@ -77,7 +90,7 @@ export async function buildDashboardState(
     {
       provider: "codex",
       displayName: "Codex",
-      read: readCodexSnapshot,
+      read: async () => readCodexSnapshot(store),
     },
     {
       provider: "agy",
@@ -119,11 +132,28 @@ export async function buildDashboardState(
       panelScale: normalizePanelScale(store.get("panelScale", 100)),
       panelOpacity: store.get("panelOpacity", 90),
       panelTone: store.get("panelTone", "charcoal"),
+      codexDataSource: store.get("codexDataSource", "official"),
+      codexProviderMultiplier: normalizeCodexProviderMultiplier(
+        store.get("codexProviderMultiplier", 1),
+      ),
+      codexDailyLimitUsd: store.get("codexDailyLimitUsd", 10),
+      codexWeeklyLimitUsd: store.get("codexWeeklyLimitUsd", 50),
+      codexMonthlyLimitUsd: store.get("codexMonthlyLimitUsd", 200),
     },
   };
 }
 
-async function readCodexSnapshot(): Promise<ProviderUsageSnapshot | null> {
+async function readCodexSnapshot(
+  store: Store<AppStoreShape>,
+): Promise<ProviderUsageSnapshot | null> {
+  if (store.get("codexDataSource", "official") === "local") {
+    return readLocalCodexSnapshot(store);
+  }
+
+  return readOfficialCodexSnapshot();
+}
+
+async function readOfficialCodexSnapshot(): Promise<ProviderUsageSnapshot | null> {
   const sessionsRoot = path.join(os.homedir(), ".codex", "sessions");
   const latestFile = await findNewestJsonlFile(sessionsRoot);
 
@@ -133,6 +163,37 @@ async function readCodexSnapshot(): Promise<ProviderUsageSnapshot | null> {
 
   const content = await fs.readFile(latestFile, "utf8");
   return extractLatestCodexUsage(content);
+}
+
+async function readLocalCodexSnapshot(
+  store: Store<AppStoreShape>,
+): Promise<ProviderUsageSnapshot | null> {
+  const sessionsRoot = path.join(os.homedir(), ".codex", "sessions");
+  const sessionFiles = await findJsonlFiles(sessionsRoot);
+  const filesWithContent = await Promise.all(
+    sessionFiles.map(async (file) => ({
+      file,
+      content: await fs.readFile(file, "utf8"),
+    })),
+  );
+  const snapshot = extractLocalCodexUsage(filesWithContent, {
+    dailyLimitUsd: store.get("codexDailyLimitUsd", 10),
+    monthlyLimitUsd: store.get("codexMonthlyLimitUsd", 200),
+    providerMultiplier: store.get("codexProviderMultiplier", 1),
+    weeklyLimitUsd: store.get("codexWeeklyLimitUsd", 50),
+  });
+
+  if (snapshot?.localUsage) {
+    console.info(
+      `【Codex本地数据】读取成功：sessions=${snapshot.localUsage.sessionCount}, totalTokens=${snapshot.localUsage.totalTokens}, multiplier=${snapshot.localUsage.providerMultiplier}, dailyCostUsd=${snapshot.localUsage.dailyCostUsd.toFixed(4)}, weeklyCostUsd=${snapshot.localUsage.weeklyCostUsd.toFixed(4)}, monthlyCostUsd=${snapshot.localUsage.monthlyCostUsd.toFixed(4)}`,
+    );
+  } else {
+    console.info(
+      `【Codex本地数据】读取失败：reason=no-token-count-events, sessionsRoot=${sessionsRoot}`,
+    );
+  }
+
+  return snapshot;
 }
 
 async function readAgySnapshot(): Promise<ProviderUsageSnapshot | null> {
@@ -146,8 +207,7 @@ async function readAgySnapshot(): Promise<ProviderUsageSnapshot | null> {
 }
 
 async function findNewestJsonlFile(root: string): Promise<string | null> {
-  const entries = await walkDirectory(root).catch(() => []);
-  const jsonlFiles = entries.filter((entry) => entry.endsWith(".jsonl"));
+  const jsonlFiles = await findJsonlFiles(root);
 
   if (jsonlFiles.length === 0) {
     return null;
@@ -165,6 +225,11 @@ async function findNewestJsonlFile(root: string): Promise<string | null> {
   );
 
   return filesWithStats[0]?.file ?? null;
+}
+
+async function findJsonlFiles(root: string): Promise<string[]> {
+  const entries = await walkDirectory(root).catch(() => []);
+  return entries.filter((entry) => entry.endsWith(".jsonl"));
 }
 
 async function walkDirectory(root: string): Promise<string[]> {

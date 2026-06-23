@@ -35,6 +35,10 @@ import { resolveTrayIconPath } from "./runtime-paths";
 import { createUsageAlertTracker } from "./usage-alerts";
 import { getPanelScaleFactor, normalizePanelScale } from "../shared/panel-scale";
 import { normalizeUsageThresholds } from "../shared/usage";
+import {
+  normalizeCodexProviderMultiplier,
+  normalizeCodexUsdLimit,
+} from "../providers/codex";
 
 let expandedWindow: BrowserWindow | null = null;
 let compactWindow: BrowserWindow | null = null;
@@ -66,6 +70,11 @@ const store = new Store<AppStoreShape>({
     panelScale: 100,
     panelOpacity: 90,
     panelTone: "charcoal",
+    codexDataSource: "official",
+    codexProviderMultiplier: 1,
+    codexDailyLimitUsd: 10,
+    codexWeeklyLimitUsd: 50,
+    codexMonthlyLimitUsd: 200,
   },
 });
 
@@ -536,6 +545,23 @@ app.whenReady().then(() => {
       store.set("panelScale", normalizePanelScale(preferences.panelScale));
       store.set("panelOpacity", preferences.panelOpacity);
       store.set("panelTone", preferences.panelTone);
+      store.set("codexDataSource", preferences.codexDataSource);
+      store.set(
+        "codexProviderMultiplier",
+        normalizeCodexProviderMultiplier(preferences.codexProviderMultiplier),
+      );
+      store.set(
+        "codexDailyLimitUsd",
+        normalizeCodexUsdLimit(preferences.codexDailyLimitUsd),
+      );
+      store.set(
+        "codexWeeklyLimitUsd",
+        normalizeCodexUsdLimit(preferences.codexWeeklyLimitUsd),
+      );
+      store.set(
+        "codexMonthlyLimitUsd",
+        normalizeCodexUsdLimit(preferences.codexMonthlyLimitUsd),
+      );
       syncLaunchAtLoginPreference(
         app,
         preferences.launchAtLogin,

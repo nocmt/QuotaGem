@@ -43,6 +43,40 @@ const providers: NormalizedProviderUsage[] = [
   },
 ];
 
+const localCodexProvider: NormalizedProviderUsage = {
+  provider: "codex",
+  displayName: "Codex",
+  health: "available",
+  session: {
+    label: "Daily",
+    percent: 42,
+    resetLabel: "2026-06-24 00:00 UTC",
+    level: "normal",
+  },
+  weekly: {
+    label: "Weekly",
+    percent: 68,
+    resetLabel: "2026-06-29 00:00 UTC",
+    level: "normal",
+  },
+  monthly: {
+    label: "Monthly",
+    percent: 12,
+    resetLabel: "2026-07-01 00:00 UTC",
+    level: "normal",
+  },
+  localUsage: {
+    sourceLabel: "Local Codex data",
+    totalTokensLabel: "801.6M tokens",
+    estimatedCostLabel: "Estimated cost $542.21",
+    multiplierLabel: "Provider multiplier x1.5",
+    modelLabel: "Pricing model gpt-5.5",
+    sessionCountLabel: "43 sessions",
+    tokenBreakdownLabel: "Input/cached/output/reasoning 798.4M / 739.5M / 3.3M / 1M",
+  },
+  lastUpdated: "2026-06-23T02:22:38.325Z",
+};
+
 describe("UsagePanel", () => {
   it("renders the expanded panel with both providers visible and exposes compact, refresh, settings, and close actions", async () => {
     const rendererModule = await import("./UsagePanel");
@@ -170,5 +204,62 @@ describe("UsagePanel", () => {
 
     expect(onOpenExpanded).toHaveBeenCalledTimes(1);
     expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it("renders local Codex usage details in the expanded panel", async () => {
+    const rendererModule = await import("./UsagePanel");
+    const UsagePanel = Reflect.get(rendererModule, "UsagePanel");
+
+    expect(typeof UsagePanel).toBe("function");
+
+    if (typeof UsagePanel !== "function") {
+      return;
+    }
+
+    render(
+      <UsagePanel
+        mode="expanded"
+        providers={[localCodexProvider]}
+        language="en"
+        loading={false}
+        lastUpdatedLabel="Updated just now"
+      />,
+    );
+
+    expect(screen.getByText("Daily")).toBeInTheDocument();
+    expect(screen.getByText("Weekly")).toBeInTheDocument();
+    expect(screen.getByText("Monthly")).toBeInTheDocument();
+    expect(screen.getByText("42%")).toBeInTheDocument();
+    expect(screen.getByText("68%")).toBeInTheDocument();
+    expect(screen.getByText("12%")).toBeInTheDocument();
+    expect(screen.queryByText("Local Codex data")).not.toBeInTheDocument();
+  });
+
+  it("renders local Codex usage details in the compact panel", async () => {
+    const rendererModule = await import("./UsagePanel");
+    const UsagePanel = Reflect.get(rendererModule, "UsagePanel");
+
+    expect(typeof UsagePanel).toBe("function");
+
+    if (typeof UsagePanel !== "function") {
+      return;
+    }
+
+    render(
+      <UsagePanel
+        mode="compact"
+        providers={[localCodexProvider]}
+        language="en"
+        loading={false}
+        lastUpdatedLabel="Updated just now"
+      />,
+    );
+
+    expect(screen.getByText("Daily")).toBeInTheDocument();
+    expect(screen.getByText("Weekly")).toBeInTheDocument();
+    expect(screen.getByText("Monthly")).toBeInTheDocument();
+    expect(screen.getByText("42%")).toBeInTheDocument();
+    expect(screen.getByText("68%")).toBeInTheDocument();
+    expect(screen.getByText("12%")).toBeInTheDocument();
   });
 });
