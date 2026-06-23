@@ -24,8 +24,26 @@ export interface ProviderUsageSnapshot {
   localUsagePrimary?: boolean;
 }
 
+export interface ModelTokenUsageSnapshot {
+  model: string;
+  inputTokens: number;
+  cachedInputTokens: number;
+  outputTokens: number;
+  reasoningOutputTokens: number;
+  totalTokens: number;
+  isFallback?: boolean;
+}
+
+export interface NormalizedModelTokenUsage {
+  model: string;
+  tokensLabel: string;
+  percentLabel: string;
+  detailLabel: string;
+  isFallback?: boolean;
+}
+
 export interface LocalTokenUsageSnapshot {
-  source: "codex-local";
+  source: "codex-local" | "ccusage";
   inputTokens: number;
   cachedInputTokens: number;
   outputTokens: number;
@@ -44,6 +62,9 @@ export interface LocalTokenUsageSnapshot {
   sessionCount: number;
   model: string;
   pricingModel: string;
+  modelBreakdown: ModelTokenUsageSnapshot[];
+  dailyModelBreakdown: ModelTokenUsageSnapshot[];
+  weeklyModelBreakdown: ModelTokenUsageSnapshot[];
   recentDailyUsage: Array<{
     date: string;
     totalTokens: number;
@@ -110,6 +131,12 @@ export interface NormalizedProviderUsage {
     todayUsageLabel: string;
     multiplierLabel: string;
     modelLabel: string;
+    modelBreakdown: NormalizedModelTokenUsage[];
+    modelBreakdowns: {
+      history: NormalizedModelTokenUsage[];
+      today: NormalizedModelTokenUsage[];
+      weekly: NormalizedModelTokenUsage[];
+    };
     sessionCountLabel: string;
     tokenBreakdownLabel: string;
     recentDailyUsage: Array<{
@@ -345,8 +372,11 @@ function formatLocalUsage(
   });
 
   const isChinese = isChineseLanguage(language);
-  const sourceLabel =
-    isChinese
+  const sourceLabel = usage.source === "ccusage"
+    ? isChinese
+      ? language === "zh-CN" ? "ccusage 本地数据" : "ccusage 本機資料"
+      : "ccusage local data"
+    : isChinese
       ? language === "zh-CN" ? "本地 Codex 数据" : "本機 Codex 資料"
       : "Local Codex data";
   const estimatedCostPrefix =
@@ -391,6 +421,12 @@ function formatLocalUsage(
     }),
     multiplierLabel: `${multiplierPrefix} x${usage.providerMultiplier.toFixed(1)}`,
     modelLabel: `${modelPrefix} ${usage.pricingModel}`,
+    modelBreakdown: formatModelBreakdown(usage.modelBreakdown, language),
+    modelBreakdowns: {
+      history: formatModelBreakdown(usage.modelBreakdown, language),
+      today: formatModelBreakdown(usage.dailyModelBreakdown, language),
+      weekly: formatModelBreakdown(usage.weeklyModelBreakdown, language),
+    },
     sessionCountLabel: `${tokenNumber.format(usage.sessionCount)} ${sessionsSuffix}`,
     tokenBreakdownLabel: `${breakdownPrefix} ${[
       usage.inputTokens,
@@ -411,6 +447,91 @@ function formatLocalUsage(
         : 0,
     })),
   };
+}
+
+function formatModelBreakdown(
+  breakdown: ModelTokenUsageSnapshot[],
+  language: WidgetLanguage,
+): NormalizedModelTokenUsage[] {
+  const sorted = [...breakdown]
+    .filter((entry) => entry.totalTokens > 0)
+    .sort((a, b) => b.totalTokens - a.totalTokens);
+
+  if (sorted.length === 0) {
+    return [];
+  }
+
+  const maxVisibleModels = 4;
+  const visible = sorted.length > maxVisibleModels
+    ? sorted.slice(0, maxVisibleModels - 1)
+    : sorted;
+  const hidden = sorted.slice(visible.length);
+  const displayEntries =
+    hidden.length > 0
+      ? [
+          ...visible,
+          hidden.reduce(
+            (result, entry) => ({
+              model: language === "zh-CN"
+                ? "其他"
+                : language === "zh-TW"
+                  ? "其他"
+                  : "Other",
+              inputTokens: result.inputTokens + entry.inputTokens,
+              cachedInputTokens:
+                result.cachedInputTokens + entry.cachedInputTokens,
+              outputTokens: result.outputTokens + entry.outputTokens,
+              reasoningOutputTokens:
+                result.reasoningOutputTokens + entry.reasoningOutputTokens,
+              totalTokens: result.totalTokens + entry.totalTokens,
+              isFallback: result.isFallback || entry.isFallback,
+            }),
+            {
+              model: "Other",
+              inputTokens: 0,
+              cachedInputTokens: 0,
+              outputTokens: 0,
+              reasoningOutputTokens: 0,
+              totalTokens: 0,
+              isFallback: false,
+            },
+          ),
+        ]
+      : visible;
+  const totalTokens = sorted.reduce((sum, entry) => sum + entry.totalTokens, 0);
+  const percentNumber = new Intl.NumberFormat(getLocaleForLanguage(language), {
+    maximumFractionDigits: 0,
+    style: "percent",
+  });
+
+  return displayEntries.map((entry) => ({
+    model: entry.model,
+    tokensLabel: formatTokenUnit(entry.totalTokens, language),
+    percentLabel: percentNumber.format(entry.totalTokens / totalTokens),
+    detailLabel: formatModelDetailLabel(entry, language),
+    isFallback: entry.isFallback,
+  }));
+}
+
+function formatModelDetailLabel(
+  entry: ModelTokenUsageSnapshot,
+  language: WidgetLanguage,
+): string {
+  const breakdownPrefix =
+    language === "zh-CN"
+      ? "输入/缓存/输出/推理"
+      : language === "zh-TW"
+        ? "輸入/快取/輸出/推理"
+        : "Input/cached/output/reasoning";
+
+  return `${entry.model}: ${formatTokenUnit(entry.totalTokens, language)} · ${breakdownPrefix} ${[
+    entry.inputTokens,
+    entry.cachedInputTokens,
+    entry.outputTokens,
+    entry.reasoningOutputTokens,
+  ]
+    .map((value) => formatTokenUnit(value, language))
+    .join(" / ")}`;
 }
 
 function formatTokenUnit(tokens: number, language: WidgetLanguage): string {

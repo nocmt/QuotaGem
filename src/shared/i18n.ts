@@ -71,6 +71,7 @@ type TranslationKey =
   | "weeklyUsageSummary"
   | "todayUsageSummary"
   | "usageHistoryUnavailable"
+  | "modelUsageBreakdown"
   | "settingsGeneralTab"
   | "settingsCodexTab"
   | "settingsClaudeTab"
@@ -251,6 +252,7 @@ const translations: Record<WidgetLanguage, Record<TranslationKey, string>> = {
     todayUsageSummary: "Today: {tokens} ({cost})",
     usageHistoryUnavailable:
       "No daily token and cost history is available for this provider.",
+    modelUsageBreakdown: "Model usage",
     hidePanel: "Hide panel",
     openUsagePanel: "Open usage panel",
     quit: "Quit",
@@ -363,6 +365,7 @@ const translations: Record<WidgetLanguage, Record<TranslationKey, string>> = {
     weeklyUsageSummary: "本週用量：{tokens}（{cost}）",
     todayUsageSummary: "今日用量：{tokens}（{cost}）",
     usageHistoryUnavailable: "此項目目前沒有每日 token 與金額歷史資料。",
+    modelUsageBreakdown: "模型用量",
     hidePanel: "收起面板",
     openUsagePanel: "開啟用量面板",
     quit: "結束",
@@ -475,6 +478,7 @@ const translations: Record<WidgetLanguage, Record<TranslationKey, string>> = {
     weeklyUsageSummary: "本周用量：{tokens}（{cost}）",
     todayUsageSummary: "今日用量：{tokens}（{cost}）",
     usageHistoryUnavailable: "此项目目前没有每日 token 与金额历史数据。",
+    modelUsageBreakdown: "模型用量",
     hidePanel: "收起面板",
     openUsagePanel: "打开用量面板",
     quit: "退出",

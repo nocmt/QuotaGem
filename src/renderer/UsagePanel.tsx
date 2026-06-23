@@ -511,12 +511,26 @@ function UsageHistoryChart({
         <div className="usage-history__summary">
           {localUsage ? (
             <>
-              <span>{localUsage.todayUsageLabel}</span>
-              <span>{localUsage.weeklyUsageLabel}</span>
-              <span>{localUsage.historyUsageLabel}</span>
+              <UsageHistorySummaryItem
+                label={localUsage.todayUsageLabel}
+                modelBreakdown={localUsage.modelBreakdowns.today}
+                language={language}
+              />
+              <UsageHistorySummaryItem
+                label={localUsage.weeklyUsageLabel}
+                modelBreakdown={localUsage.modelBreakdowns.weekly}
+                language={language}
+              />
+              <UsageHistorySummaryItem
+                label={localUsage.historyUsageLabel}
+                modelBreakdown={localUsage.modelBreakdowns.history}
+                language={language}
+              />
             </>
           ) : (
-            <span>{getHistoryProviderLabel(selectedProvider)}</span>
+            <span className="usage-history__summary-item">
+              {getHistoryProviderLabel(selectedProvider)}
+            </span>
           )}
         </div>
         <div className="usage-history__segmented" role="group">
@@ -549,6 +563,54 @@ function UsageHistoryChart({
         </div>
       )}
     </section>
+  );
+}
+
+function UsageHistorySummaryItem({
+  label,
+  modelBreakdown,
+  language,
+}: {
+  label: string;
+  modelBreakdown: NonNullable<NormalizedProviderUsage["localUsage"]>["modelBreakdown"];
+  language: WidgetLanguage;
+}) {
+  const hasBreakdown = modelBreakdown.length > 0;
+
+  return (
+    <span
+      className={`usage-history__summary-item${hasBreakdown ? " usage-history__summary-item--interactive" : ""}`}
+      tabIndex={hasBreakdown ? 0 : undefined}
+    >
+      <span className="usage-history__summary-label">{label}</span>
+      {hasBreakdown ? (
+        <span
+          className="usage-history__model-popover"
+          role="tooltip"
+          aria-label={t(language, "modelUsageBreakdown")}
+        >
+          <span className="usage-history__model-popover-title">
+            {t(language, "modelUsageBreakdown")}
+          </span>
+          <span className="usage-history__model-popover-list">
+            {modelBreakdown.map((model) => (
+              <span
+                key={model.model}
+                className="usage-history__model-popover-row"
+                title={model.detailLabel}
+              >
+                <span className="usage-history__model-popover-name">
+                  {model.model}
+                </span>
+                <span className="usage-history__model-popover-meta">
+                  {model.tokensLabel} · {model.percentLabel}
+                </span>
+              </span>
+            ))}
+          </span>
+        </span>
+      ) : null}
+    </span>
   );
 }
 

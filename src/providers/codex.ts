@@ -1,5 +1,6 @@
 import type {
   LocalTokenUsageSnapshot,
+  ModelTokenUsageSnapshot,
   ProviderUsageSnapshot,
 } from "../shared/usage";
 
@@ -186,8 +187,11 @@ export function extractLocalCodexUsage(
       ? pricingModels[0]
       : "mixed";
   const increments = sessionSummaries.flatMap((summary) => summary.increments);
+  const modelBreakdown = buildLocalCodexModelBreakdown(increments);
   const weeklyUsage = summarizePeriodUsage(increments, periods.week);
   const dailyUsage = summarizePeriodUsage(increments, periods.day);
+  const dailyIncrements = filterLocalCodexIncrements(increments, periods.day);
+  const weeklyIncrements = filterLocalCodexIncrements(increments, periods.week);
   const dailyCostUsd = estimatePeriodCostUsd(increments, periods.day) *
     providerMultiplier;
   const weeklyCostUsd = estimatePeriodCostUsd(increments, periods.week) *
@@ -225,6 +229,9 @@ export function extractLocalCodexUsage(
     sessionCount: sessionSummaries.length,
     model: pricingModel,
     pricingModel,
+    modelBreakdown,
+    dailyModelBreakdown: buildLocalCodexModelBreakdown(dailyIncrements),
+    weeklyModelBreakdown: buildLocalCodexModelBreakdown(weeklyIncrements),
     recentDailyUsage,
   };
 
@@ -269,6 +276,52 @@ interface LocalCodexUsageIncrement {
   timestamp: string;
   model: string;
   usage: LocalCodexSessionUsage["usage"];
+}
+
+function buildLocalCodexModelBreakdown(
+  increments: LocalCodexUsageIncrement[],
+): ModelTokenUsageSnapshot[] {
+  const totalsByModel = new Map<string, ModelTokenUsageSnapshot>();
+
+  for (const increment of increments) {
+    const model = resolvePricingModel(increment.model);
+    const existing = totalsByModel.get(model) ?? {
+      model,
+      cachedInputTokens: 0,
+      inputTokens: 0,
+      outputTokens: 0,
+      reasoningOutputTokens: 0,
+      totalTokens: 0,
+    };
+
+    totalsByModel.set(model, {
+      model,
+      cachedInputTokens:
+        existing.cachedInputTokens + increment.usage.cachedInputTokens,
+      inputTokens: existing.inputTokens + increment.usage.inputTokens,
+      outputTokens: existing.outputTokens + increment.usage.outputTokens,
+      reasoningOutputTokens:
+        existing.reasoningOutputTokens + increment.usage.reasoningOutputTokens,
+      totalTokens: existing.totalTokens + increment.usage.totalTokens,
+    });
+  }
+
+  return Array.from(totalsByModel.values()).sort(
+    (a, b) => b.totalTokens - a.totalTokens,
+  );
+}
+
+function filterLocalCodexIncrements(
+  increments: LocalCodexUsageIncrement[],
+  period: { start: Date; end: Date },
+): LocalCodexUsageIncrement[] {
+  return increments.filter((increment) => {
+    const timestamp = Date.parse(increment.timestamp);
+
+    return !Number.isNaN(timestamp) &&
+      timestamp >= period.start.getTime() &&
+      timestamp < period.end.getTime();
+  });
 }
 
 function extractLocalCodexSessionUsage(

@@ -499,9 +499,101 @@ select {
   line-height: 1.38;
 }
 
-.usage-history__summary span {
+.usage-history__summary-item {
+  position: relative;
   min-width: 0;
   overflow-wrap: anywhere;
+}
+
+.usage-history__summary-item--interactive {
+  cursor: default;
+  outline: none;
+}
+
+.usage-history__summary-label {
+  display: inline;
+}
+
+.usage-history__summary-item--interactive:hover .usage-history__summary-label,
+.usage-history__summary-item--interactive:focus .usage-history__summary-label,
+.usage-history__summary-item--interactive:focus-within .usage-history__summary-label {
+  color: rgba(var(--panel-text-rgb), 1);
+}
+
+.usage-history__model-popover {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 7px);
+  z-index: 5;
+  width: min(360px, 68vw);
+  display: grid;
+  gap: 7px;
+  padding: 10px;
+  border-radius: 12px;
+  color: rgba(var(--panel-text-rgb), 0.92);
+  background:
+    linear-gradient(180deg, rgba(var(--panel-overlay-rgb), 0.08), rgba(var(--panel-overlay-rgb), 0.03)),
+    rgba(var(--panel-base-rgb), 0.96);
+  border: 1px solid rgba(var(--panel-border-rgb), 0.2);
+  box-shadow:
+    0 14px 34px rgba(var(--panel-shadow-rgb), 0.28),
+    inset 0 1px 0 rgba(var(--panel-inset-rgb), 0.08);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-3px);
+  transition:
+    opacity 120ms ease,
+    transform 120ms ease;
+}
+
+.usage-history__summary-item--interactive:hover .usage-history__model-popover,
+.usage-history__summary-item--interactive:focus .usage-history__model-popover,
+.usage-history__summary-item--interactive:focus-within .usage-history__model-popover {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.usage-history__model-popover-title {
+  color: rgba(var(--panel-muted-rgb), 0.76);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.usage-history__model-popover-list {
+  display: grid;
+  gap: 5px;
+}
+
+.usage-history__model-popover-row {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  border-radius: 9px;
+  background: rgba(var(--panel-button-rgb), 0.13);
+  border: 1px solid rgba(var(--panel-border-rgb), 0.1);
+}
+
+.usage-history__model-popover-name,
+.usage-history__model-popover-meta {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.usage-history__model-popover-name {
+  font-size: 11px;
+  font-weight: 760;
+}
+
+.usage-history__model-popover-meta {
+  color: rgba(var(--panel-muted-rgb), 0.82);
+  font-size: 10px;
+  font-weight: 680;
 }
 
 .usage-history__header {

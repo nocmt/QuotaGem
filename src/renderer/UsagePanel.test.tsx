@@ -4,6 +4,8 @@ import { afterAll, beforeAll, vi } from "vitest";
 
 import type { NormalizedProviderUsage } from "../shared/usage";
 
+type NormalizedLocalUsage = NonNullable<NormalizedProviderUsage["localUsage"]>;
+
 const providers: NormalizedProviderUsage[] = [
   {
     provider: "claude",
@@ -95,6 +97,58 @@ const localCodexProvider: NormalizedProviderUsage = {
     todayUsageLabel: "Today: 1.8M ($1.02)",
     multiplierLabel: "Provider multiplier x1.5",
     modelLabel: "Pricing model gpt-5.5",
+    modelBreakdown: [
+      {
+        model: "gpt-5.5",
+        tokensLabel: "790M",
+        percentLabel: "99%",
+        detailLabel:
+          "gpt-5.5: 790M · Input/cached/output/reasoning 40M / 740M / 8M / 2M",
+      },
+      {
+        model: "gpt-5.4",
+        tokensLabel: "11.6M",
+        percentLabel: "1%",
+        detailLabel:
+          "gpt-5.4: 11.6M · Input/cached/output/reasoning 5M / 6M / 500K / 100K",
+      },
+    ],
+    modelBreakdowns: {
+      history: [
+        {
+          model: "gpt-5.5",
+          tokensLabel: "790M",
+          percentLabel: "99%",
+          detailLabel:
+            "gpt-5.5: 790M · Input/cached/output/reasoning 40M / 740M / 8M / 2M",
+        },
+        {
+          model: "gpt-5.4",
+          tokensLabel: "11.6M",
+          percentLabel: "1%",
+          detailLabel:
+            "gpt-5.4: 11.6M · Input/cached/output/reasoning 5M / 6M / 500K / 100K",
+        },
+      ],
+      today: [
+        {
+          model: "gpt-5.5",
+          tokensLabel: "1.8M",
+          percentLabel: "100%",
+          detailLabel:
+            "gpt-5.5: 1.8M · Input/cached/output/reasoning 100K / 1.6M / 80K / 20K",
+        },
+      ],
+      weekly: [
+        {
+          model: "gpt-5.5",
+          tokensLabel: "12.4M",
+          percentLabel: "100%",
+          detailLabel:
+            "gpt-5.5: 12.4M · Input/cached/output/reasoning 1M / 11M / 300K / 100K",
+        },
+      ],
+    },
     sessionCountLabel: "43 sessions",
     tokenBreakdownLabel: "Input/cached/output/reasoning 798.4M / 739.5M / 3.3M / 1M",
     recentDailyUsage: [
@@ -119,6 +173,8 @@ const localCodexProvider: NormalizedProviderUsage = {
   lastUpdated: "2026-06-23T02:22:38.325Z",
 };
 
+const localCodexUsage = localCodexProvider.localUsage as NormalizedLocalUsage;
+
 const agyProvider: NormalizedProviderUsage = {
   provider: "agy",
   displayName: "Agy",
@@ -142,6 +198,72 @@ const agyProvider: NormalizedProviderUsage = {
     level: "normal",
   },
   lastUpdated: "2026-06-23T02:22:38.325Z",
+};
+
+const agyProviderWithHistory: NormalizedProviderUsage = {
+  ...agyProvider,
+  localUsage: {
+    ...localCodexUsage,
+    historyUsageLabel: "History: 120K ($3.40)",
+    recentDailyUsage: [
+      {
+        dateLabel: "06/17",
+        tokensLabel: "50K",
+        costLabel: "$1.20",
+        costUsd: 1.2,
+        totalTokens: 50_000,
+        barPercent: 70,
+      },
+      {
+        dateLabel: "06/18",
+        tokensLabel: "70K",
+        costLabel: "$2.20",
+        costUsd: 2.2,
+        totalTokens: 70_000,
+        barPercent: 100,
+      },
+    ],
+    todayUsageLabel: "Today: 70K ($2.20)",
+    weeklyUsageLabel: "This week: 120K ($3.40)",
+    modelBreakdown: [
+      {
+        model: "gemini-2.5-pro",
+        tokensLabel: "120K",
+        percentLabel: "100%",
+        detailLabel:
+          "gemini-2.5-pro: 120K · Input/cached/output/reasoning 80K / 20K / 15K / 5K",
+      },
+    ],
+    modelBreakdowns: {
+      history: [
+        {
+          model: "gemini-2.5-pro",
+          tokensLabel: "120K",
+          percentLabel: "100%",
+          detailLabel:
+            "gemini-2.5-pro: 120K · Input/cached/output/reasoning 80K / 20K / 15K / 5K",
+        },
+      ],
+      today: [
+        {
+          model: "gemini-2.5-pro",
+          tokensLabel: "70K",
+          percentLabel: "100%",
+          detailLabel:
+            "gemini-2.5-pro: 70K · Input/cached/output/reasoning 50K / 10K / 8K / 2K",
+        },
+      ],
+      weekly: [
+        {
+          model: "gemini-2.5-pro",
+          tokensLabel: "120K",
+          percentLabel: "100%",
+          detailLabel:
+            "gemini-2.5-pro: 120K · Input/cached/output/reasoning 80K / 20K / 15K / 5K",
+        },
+      ],
+    },
+  },
 };
 
 const remainingCodexProvider: NormalizedProviderUsage = {
@@ -369,7 +491,7 @@ describe("UsagePanel", () => {
     expect(screen.getByText("This week: 12.4M ($8.12)")).toBeInTheDocument();
     expect(screen.getByText("Today: 1.8M ($1.02)")).toBeInTheDocument();
     expect(
-      Array.from(container.querySelectorAll(".usage-history__summary span")).map(
+      Array.from(container.querySelectorAll(".usage-history__summary-label")).map(
         (element) => element.textContent,
       ),
     ).toEqual([
@@ -380,6 +502,12 @@ describe("UsagePanel", () => {
     expect(screen.getByRole("button", { name: "Claude" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Codex" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Antigravity" })).toBeInTheDocument();
+    expect(screen.getAllByText("Model usage").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("gpt-5.5").length).toBeGreaterThan(0);
+    expect(screen.getByText("1.8M · 100%")).toBeInTheDocument();
+    expect(screen.getByText("12.4M · 100%")).toBeInTheDocument();
+    expect(screen.getByText("790M · 99%")).toBeInTheDocument();
+    expect(screen.getByText("gpt-5.4")).toBeInTheDocument();
     expect(screen.getByRole("img", { name: "Today: 1.8M ($1.02)" })).toBeInTheDocument();
     expect(container.querySelector(".compact-widget__mark")).not.toBeInTheDocument();
     expect(container.querySelector(".usage-history__canvas")).toBeInTheDocument();
@@ -412,6 +540,37 @@ describe("UsagePanel", () => {
       screen.getByText("No daily token and cost history is available for this provider."),
     ).toBeInTheDocument();
     expect(container.querySelector(".usage-history__canvas")).not.toBeInTheDocument();
+  });
+
+  it("switches the wide-panel history chart to another provider when ccusage data is available", async () => {
+    const rendererModule = await import("./UsagePanel");
+    const UsagePanel = Reflect.get(rendererModule, "UsagePanel");
+
+    expect(typeof UsagePanel).toBe("function");
+
+    if (typeof UsagePanel !== "function") {
+      return;
+    }
+
+    render(
+      <UsagePanel
+        mode="compact"
+        providers={[localCodexProvider, agyProviderWithHistory]}
+        language="en"
+        loading={false}
+        lastUpdatedLabel="Updated just now"
+      />,
+    );
+
+    await userEvent.click(screen.getByRole("button", { name: "Antigravity" }));
+
+    expect(screen.getByText("Today: 70K ($2.20)")).toBeInTheDocument();
+    expect(screen.getAllByText("gemini-2.5-pro").length).toBeGreaterThan(0);
+    expect(screen.getByText("70K · 100%")).toBeInTheDocument();
+    expect(screen.getAllByText("120K · 100%").length).toBeGreaterThan(0);
+    expect(
+      screen.getByRole("img", { name: "Today: 70K ($2.20)" }),
+    ).toBeInTheDocument();
   });
 
   it("renders local Codex usage details in the compact panel", async () => {

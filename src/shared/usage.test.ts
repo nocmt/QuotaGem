@@ -239,6 +239,36 @@ describe("normalizeProviderUsage", () => {
         sessionCount: 2,
         model: "gpt-5.4-mini",
         pricingModel: "gpt-5.4-mini",
+        modelBreakdown: [
+          {
+            model: "gpt-5.4-mini",
+            inputTokens: 5000,
+            cachedInputTokens: 1800,
+            outputTokens: 300,
+            reasoningOutputTokens: 50,
+            totalTokens: 5300,
+          },
+        ],
+        dailyModelBreakdown: [
+          {
+            model: "gpt-5.4-mini",
+            inputTokens: 1000,
+            cachedInputTokens: 100,
+            outputTokens: 80,
+            reasoningOutputTokens: 20,
+            totalTokens: 1200,
+          },
+        ],
+        weeklyModelBreakdown: [
+          {
+            model: "gpt-5.4-mini",
+            inputTokens: 3900,
+            cachedInputTokens: 100,
+            outputTokens: 160,
+            reasoningOutputTokens: 40,
+            totalTokens: 4200,
+          },
+        ],
         recentDailyUsage: [
           {
             date: "2026-06-22",
@@ -275,6 +305,48 @@ describe("normalizeProviderUsage", () => {
       todayUsageLabel: "Today: 1.2K ($0.00)",
       multiplierLabel: "Provider multiplier x2.0",
       modelLabel: "Pricing model gpt-5.4-mini",
+      modelBreakdown: [
+        {
+          model: "gpt-5.4-mini",
+          tokensLabel: "5.3K",
+          percentLabel: "100%",
+          detailLabel:
+            "gpt-5.4-mini: 5.3K · Input/cached/output/reasoning 5K / 1.8K / 300 / 50",
+          isFallback: undefined,
+        },
+      ],
+      modelBreakdowns: {
+        history: [
+          {
+            model: "gpt-5.4-mini",
+            tokensLabel: "5.3K",
+            percentLabel: "100%",
+            detailLabel:
+              "gpt-5.4-mini: 5.3K · Input/cached/output/reasoning 5K / 1.8K / 300 / 50",
+            isFallback: undefined,
+          },
+        ],
+        today: [
+          {
+            model: "gpt-5.4-mini",
+            tokensLabel: "1.2K",
+            percentLabel: "100%",
+            detailLabel:
+              "gpt-5.4-mini: 1.2K · Input/cached/output/reasoning 1K / 100 / 80 / 20",
+            isFallback: undefined,
+          },
+        ],
+        weekly: [
+          {
+            model: "gpt-5.4-mini",
+            tokensLabel: "4.2K",
+            percentLabel: "100%",
+            detailLabel:
+              "gpt-5.4-mini: 4.2K · Input/cached/output/reasoning 3.9K / 100 / 160 / 40",
+            isFallback: undefined,
+          },
+        ],
+      },
       sessionCountLabel: "2 sessions",
       tokenBreakdownLabel: "Input/cached/output/reasoning 5K / 1.8K / 300 / 50",
       recentDailyUsage: [
@@ -340,6 +412,36 @@ describe("normalizeProviderUsage", () => {
         sessionCount: 2,
         model: "gpt-5.4-mini",
         pricingModel: "gpt-5.4-mini",
+        modelBreakdown: [
+          {
+            model: "gpt-5.4-mini",
+            inputTokens: 5000,
+            cachedInputTokens: 1800,
+            outputTokens: 300,
+            reasoningOutputTokens: 50,
+            totalTokens: 5300,
+          },
+        ],
+        dailyModelBreakdown: [
+          {
+            model: "gpt-5.4-mini",
+            inputTokens: 1000,
+            cachedInputTokens: 100,
+            outputTokens: 80,
+            reasoningOutputTokens: 20,
+            totalTokens: 1200,
+          },
+        ],
+        weeklyModelBreakdown: [
+          {
+            model: "gpt-5.4-mini",
+            inputTokens: 3900,
+            cachedInputTokens: 100,
+            outputTokens: 160,
+            reasoningOutputTokens: 40,
+            totalTokens: 4200,
+          },
+        ],
         recentDailyUsage: [
           {
             date: "2026-06-23",
