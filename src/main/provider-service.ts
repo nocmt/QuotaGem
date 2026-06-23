@@ -21,7 +21,11 @@ import type {
   DateFormatPreference,
   UsageDashboardState,
 } from "../shared/dashboard";
-import { t, type WidgetLanguage } from "../shared/i18n";
+import {
+  normalizeWidgetLanguage,
+  t,
+  type WidgetLanguage,
+} from "../shared/i18n";
 import { normalizePanelScale } from "../shared/panel-scale";
 import type { PanelTone } from "../shared/panel-themes";
 import {
@@ -81,6 +85,7 @@ export async function buildDashboardState(
     warningThreshold: store.get("warningThreshold", 75),
     dangerThreshold: store.get("dangerThreshold", 90),
   });
+  const language = normalizeWidgetLanguage(store.get("language", "en"));
   const snapshots = await loadProviderSnapshots([
     {
       provider: "claude",
@@ -102,7 +107,7 @@ export async function buildDashboardState(
   return {
     providers: snapshots.map((snapshot) =>
       normalizeProviderUsage(snapshot, {
-        language: store.get("language", "en"),
+        language,
         timeDisplay: "taipei",
         timeFormat: store.get("timeFormat", "24h"),
         dateFormat: store.get("dateFormat", "iso"),
@@ -111,7 +116,7 @@ export async function buildDashboardState(
       }),
     ),
     lastUpdatedLabel: buildLastUpdatedLabel(snapshots, {
-      language: store.get("language", "en"),
+      language,
       timeDisplay: store.get("timeDisplay", "utc"),
       timeFormat: store.get("timeFormat", "24h"),
       dateFormat: store.get("dateFormat", "iso"),
@@ -125,7 +130,7 @@ export async function buildDashboardState(
       dangerThreshold: thresholds.dangerThreshold,
       notificationsEnabled: store.get("notificationsEnabled", true),
       notificationLevel: store.get("notificationLevel", "all"),
-      language: store.get("language", "en"),
+      language,
       timeDisplay: store.get("timeDisplay", "utc"),
       timeFormat: store.get("timeFormat", "24h"),
       dateFormat: store.get("dateFormat", "iso"),
@@ -495,7 +500,10 @@ function buildLastUpdatedLabel(
   }
 
   const date = new Date(latestTimestamp);
-  const locale = preferences.language === "zh-TW" ? "zh-TW" : "en-US";
+  const locale =
+    preferences.language === "zh-TW" ? "zh-TW" :
+    preferences.language === "zh-CN" ? "zh-CN" :
+    "en-US";
   const parts = new Intl.DateTimeFormat(locale, {
     year: "numeric",
     month: "2-digit",

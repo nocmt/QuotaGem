@@ -284,6 +284,7 @@ function UsageDashboardApp() {
               >
                 <option value="en">{t(language, "english")}</option>
                 <option value="zh-TW">{t(language, "traditionalChinese")}</option>
+                <option value="zh-CN">{t(language, "simplifiedChinese")}</option>
               </select>
             </label>
             <label className="settings-field">

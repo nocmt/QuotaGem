@@ -14,7 +14,11 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 
 import type { UsageDashboardState } from "../shared/dashboard";
-import { t } from "../shared/i18n";
+import {
+  normalizeWidgetLanguage,
+  resolveWidgetLanguageFromSystemLocale,
+  t,
+} from "../shared/i18n";
 import {
   getLaunchAtLoginRuntime,
   readLaunchAtLoginPreference,
@@ -63,7 +67,6 @@ const store = new Store<AppStoreShape>({
     dangerThreshold: 90,
     notificationsEnabled: true,
     notificationLevel: "all",
-    language: "en",
     timeDisplay: "utc",
     timeFormat: "24h",
     dateFormat: "iso",
@@ -173,7 +176,7 @@ function createTray() {
   });
   const image = nativeImage.createFromPath(iconPath).resize({ width: 20, height: 20 });
   image.setTemplateImage(true);
-  const language = store.get("language", "en");
+  const language = getCurrentLanguage();
 
   tray = new Tray(image);
   tray.setToolTip(t(language, "trayUsageWidget"));
@@ -204,7 +207,7 @@ function createTray() {
 }
 
 function buildTrayMenu() {
-  const language = store.get("language", "en");
+  const language = getCurrentLanguage();
   return Menu.buildFromTemplate([
     {
       label: t(language, "openUsagePanel"),
@@ -353,6 +356,23 @@ function getCurrentPanelScale(): number {
   return normalizePanelScale(store.get("panelScale", 100));
 }
 
+function getCurrentLanguage() {
+  return normalizeWidgetLanguage(store.get("language", "en"));
+}
+
+function initializeLanguagePreference(): void {
+  if (store.has("language")) {
+    const normalizedLanguage = getCurrentLanguage();
+    store.set("language", normalizedLanguage);
+    return;
+  }
+
+  store.set(
+    "language",
+    resolveWidgetLanguageFromSystemLocale(app.getLocale()),
+  );
+}
+
 function applyPanelScale(window: BrowserWindow | null): void {
   if (!window || window.isDestroyed()) {
     return;
@@ -463,6 +483,7 @@ function positionWindow(
 
 app.commandLine.appendSwitch("disable-gpu");
 app.whenReady().then(() => {
+  initializeLanguagePreference();
   primeClaudeSession();
   syncLaunchAtLoginPreference(
     app,

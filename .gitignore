@@ -4,3 +4,5 @@ dist-electron/
 *.tsbuildinfo
 claude-debug.json
 release
+.cache
+build.ps1

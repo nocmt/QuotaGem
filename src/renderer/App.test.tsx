@@ -218,6 +218,18 @@ describe("App", () => {
     });
   });
 
+  it("shows Simplified Chinese in the language selector", async () => {
+    render(<App />);
+
+    await userEvent.click(
+      await screen.findByRole("button", { name: "Open settings" }),
+    );
+
+    expect(
+      await screen.findByRole("option", { name: "Simplified Chinese" }),
+    ).toBeInTheDocument();
+  });
+
   it("lets people switch Codex to local data and set provider limits", async () => {
     render(<App />);
 

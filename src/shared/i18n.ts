@@ -1,4 +1,38 @@
-export type WidgetLanguage = "en" | "zh-TW";
+export type WidgetLanguage = "en" | "zh-TW" | "zh-CN";
+
+export function normalizeWidgetLanguage(value: unknown): WidgetLanguage {
+  if (value === "zh-TW" || value === "zh-CN" || value === "en") {
+    return value;
+  }
+
+  return "en";
+}
+
+export function resolveWidgetLanguageFromSystemLocale(
+  locale: string | null | undefined,
+): WidgetLanguage {
+  const normalized = locale?.toLowerCase() ?? "";
+
+  if (
+    normalized.includes("hans") ||
+    normalized.startsWith("zh-cn") ||
+    normalized.startsWith("zh-sg") ||
+    normalized.startsWith("zh-my")
+  ) {
+    return "zh-CN";
+  }
+
+  if (
+    normalized.includes("hant") ||
+    normalized.startsWith("zh-tw") ||
+    normalized.startsWith("zh-hk") ||
+    normalized.startsWith("zh-mo")
+  ) {
+    return "zh-TW";
+  }
+
+  return "en";
+}
 
 type TranslationKey =
   | "waitingForProviderData"
@@ -75,6 +109,7 @@ type TranslationKey =
   | "language"
   | "english"
   | "traditionalChinese"
+  | "simplifiedChinese"
   | "refreshUsage"
   | "openSettings"
   | "openExpandedUsagePanel"
@@ -163,6 +198,7 @@ const translations: Record<WidgetLanguage, Record<TranslationKey, string>> = {
     language: "Language",
     english: "English",
     traditionalChinese: "Traditional Chinese",
+    simplifiedChinese: "Simplified Chinese",
     refreshUsage: "Refresh usage",
     openSettings: "Open settings",
     openExpandedUsagePanel: "Open expanded usage panel",
@@ -250,6 +286,7 @@ const translations: Record<WidgetLanguage, Record<TranslationKey, string>> = {
     language: "語言",
     english: "English",
     traditionalChinese: "繁體中文",
+    simplifiedChinese: "简体中文",
     refreshUsage: "重新整理用量",
     openSettings: "開啟設定",
     openExpandedUsagePanel: "開啟大面板",
@@ -259,6 +296,94 @@ const translations: Record<WidgetLanguage, Record<TranslationKey, string>> = {
     quit: "結束",
     trayUsageWidget: "QuotaGem",
     usageAlertBody: "{provider} 的 {metric} 用量已達 {percent}%。",
+  },
+  "zh-CN": {
+    waitingForProviderData: "正在等待 provider 数据",
+    updatedJustNow: "刚刚更新",
+    updatedMinutesAgo: "{minutes} 分钟前更新",
+    updatedAt: "更新于 {time}",
+    refreshing: "刷新中...",
+    session: "每五小时",
+    weekly: "每周",
+    resets: "重置",
+    unavailable: "无法获取",
+    live: "实时",
+    localSuffix: "本机",
+    utcSuffix: "UTC",
+    taipeiSuffix: "台北",
+    taipeiTime: "台北时间 (UTC+8)",
+    settings: "设置",
+    closeSettings: "关闭设置",
+    connectClaude: "连接 Claude",
+    waitingForClaudeLogin: "等待 Claude 登录中...",
+    preferredDisplayMode: "默认打开面板",
+    launchAtLogin: "Windows 登录时启动",
+    providerVisibility: "显示项目",
+    codexDataSource: "Codex 数据来源",
+    codexDataSourceOfficial: "官方",
+    codexDataSourceLocal: "本地数据",
+    codexProviderMultiplier: "供应商倍率",
+    codexDailyLimit: "每日限额 ($)",
+    codexWeeklyLimit: "每周限额 ($)",
+    codexMonthlyLimit: "每月限额 ($)",
+    expandedPanel: "大面板",
+    compactPanel: "小面板",
+    bothProviders: "Claude + Codex",
+    claudeOnly: "只显示 Claude",
+    codexOnly: "只显示 Codex",
+    refreshInterval: "更新频率",
+    warningThreshold: "警告阈值",
+    dangerThreshold: "危险阈值",
+    enableNotifications: "启用通知",
+    notificationMode: "通知模式",
+    notificationAllLevels: "警告与危险",
+    notificationDangerOnly: "只提醒危险",
+    oneMinute: "1 分钟",
+    fiveMinutes: "5 分钟",
+    fifteenMinutes: "15 分钟",
+    resetTimeTimezone: "重置时间时区",
+    localTime: "本机时间",
+    timeDisplayFormat: "时间显示格式",
+    dateFormat: "日期格式",
+    dateFormatIso: "YYYY-MM-DD",
+    dateFormatMdy: "MM/DD/YYYY",
+    dateFormatDmy: "DD/MM/YYYY",
+    twentyFourHour: "24 小时制",
+    twelveHour: "12 小时制",
+    panelScale: "面板缩放",
+    panelTransparency: "面板透明度",
+    panelBackgroundColor: "面板背景色",
+    charcoal: "木炭黑",
+    slate: "石板灰",
+    forest: "灰绿色",
+    ocean: "灰蓝色",
+    mocha: "摩卡棕",
+    linen: "浅米色",
+    mist: "雾灰色",
+    sand: "沙色",
+    blossom: "淡粉色",
+    savePreferences: "保存设置",
+    savedClaudeAccepted: "设置已保存。",
+    couldNotSaveClaudeSettings: "无法保存设置。",
+    recommendedConnectClaude:
+      "建议直接按“连接 Claude”。只有在登录流程失败时，才需要改用手动凭证。",
+    codexAutoDetected:
+      "Codex 用量会从本地桌面数据自动检测。Claude 建议使用下方登录窗口来连接。",
+    claudeConnectedSuccessfully: "Claude 连接成功。",
+    couldNotConnectClaude: "无法连接 Claude。",
+    language: "语言",
+    english: "English",
+    traditionalChinese: "繁體中文",
+    simplifiedChinese: "简体中文",
+    refreshUsage: "刷新用量",
+    openSettings: "打开设置",
+    openExpandedUsagePanel: "打开大面板",
+    openCompactUsagePanel: "打开小面板",
+    hidePanel: "收起面板",
+    openUsagePanel: "打开用量面板",
+    quit: "退出",
+    trayUsageWidget: "QuotaGem",
+    usageAlertBody: "{provider} 的 {metric} 用量已达 {percent}%。",
   },
 };
 

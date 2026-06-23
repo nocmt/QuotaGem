@@ -95,6 +95,22 @@ export interface UsageThresholds {
   dangerThreshold: number;
 }
 
+function isChineseLanguage(language: WidgetLanguage): boolean {
+  return language === "zh-TW" || language === "zh-CN";
+}
+
+function getLocaleForLanguage(language: WidgetLanguage): string {
+  if (language === "zh-TW") {
+    return "zh-TW";
+  }
+
+  if (language === "zh-CN") {
+    return "zh-CN";
+  }
+
+  return "en-US";
+}
+
 export function normalizeProviderUsage(
   snapshot: ProviderUsageSnapshot,
   options: {
@@ -110,18 +126,19 @@ export function normalizeProviderUsage(
   const thresholds = normalizeUsageThresholds(options);
   const isAgy = snapshot.provider === "agy";
   const lang = options.language;
+  const isChinese = isChineseLanguage(lang);
 
   const sessionLabel = isAgy
-    ? (lang === "zh-TW" ? "Gemini 5小時" : "Gemini 5h")
+    ? (isChinese ? (lang === "zh-CN" ? "Gemini 5小时" : "Gemini 5小時") : "Gemini 5h")
     : snapshot.localUsage
-      ? (lang === "zh-TW" ? "每日" : "Daily")
+      ? (isChinese ? "每日" : "Daily")
     : t(lang, "session");
   const weeklyLabel = isAgy
-    ? (lang === "zh-TW" ? "Gemini 每週" : "Gemini Weekly")
+    ? (isChinese ? (lang === "zh-CN" ? "Gemini 每周" : "Gemini 每週") : "Gemini Weekly")
     : t(lang, "weekly");
   const monthly = snapshot.monthlyPercent !== undefined
     ? {
-        label: lang === "zh-TW" ? "每月" : "Monthly",
+        label: isChinese ? "每月" : "Monthly",
         percent: snapshot.monthlyPercent,
         resetLabel: formatResetDisplay(
           snapshot.monthlyResetAt ?? null,
@@ -138,7 +155,9 @@ export function normalizeProviderUsage(
   let thirdPartySession = undefined;
   if (snapshot.thirdPartySessionPercent !== undefined) {
     thirdPartySession = {
-      label: lang === "zh-TW" ? "Claude/GPT 5小時" : "Claude/GPT 5h",
+      label: isChinese
+        ? lang === "zh-CN" ? "Claude/GPT 5小时" : "Claude/GPT 5小時"
+        : "Claude/GPT 5h",
       percent: snapshot.thirdPartySessionPercent,
       resetLabel: formatResetDisplay(
         snapshot.thirdPartySessionResetAt ?? null,
@@ -155,7 +174,9 @@ export function normalizeProviderUsage(
   let thirdPartyWeekly = undefined;
   if (snapshot.thirdPartyWeeklyPercent !== undefined) {
     thirdPartyWeekly = {
-      label: lang === "zh-TW" ? "Claude/GPT 每週" : "Claude/GPT Weekly",
+      label: isChinese
+        ? lang === "zh-CN" ? "Claude/GPT 每周" : "Claude/GPT 每週"
+        : "Claude/GPT Weekly",
       percent: snapshot.thirdPartyWeeklyPercent,
       resetLabel: formatResetDisplay(
         snapshot.thirdPartyWeeklyResetAt ?? null,
@@ -214,12 +235,10 @@ function formatLocalUsage(
   language: WidgetLanguage,
 ): NormalizedProviderUsage["localUsage"] {
   const compactNumber = new Intl.NumberFormat(
-    language === "zh-TW" ? "zh-TW" : "en-US",
+    getLocaleForLanguage(language),
     { maximumFractionDigits: 1, notation: "compact" },
   );
-  const tokenNumber = new Intl.NumberFormat(
-    language === "zh-TW" ? "zh-TW" : "en-US",
-  );
+  const tokenNumber = new Intl.NumberFormat(getLocaleForLanguage(language));
   const costNumber = new Intl.NumberFormat("en-US", {
     currency: "USD",
     maximumFractionDigits: usage.estimatedCostUsd >= 1 ? 2 : 4,
@@ -227,16 +246,28 @@ function formatLocalUsage(
     style: "currency",
   });
 
+  const isChinese = isChineseLanguage(language);
   const sourceLabel =
-    language === "zh-TW" ? "本機 Codex 資料" : "Local Codex data";
+    isChinese
+      ? language === "zh-CN" ? "本地 Codex 数据" : "本機 Codex 資料"
+      : "Local Codex data";
   const estimatedCostPrefix =
-    language === "zh-TW" ? "估算費用" : "Estimated cost";
+    isChinese
+      ? language === "zh-CN" ? "估算费用" : "估算費用"
+      : "Estimated cost";
   const multiplierPrefix =
-    language === "zh-TW" ? "供應商倍率" : "Provider multiplier";
-  const modelPrefix = language === "zh-TW" ? "計價模型" : "Pricing model";
-  const sessionsSuffix = language === "zh-TW" ? "個 session" : "sessions";
+    isChinese
+      ? language === "zh-CN" ? "供应商倍率" : "供應商倍率"
+      : "Provider multiplier";
+  const modelPrefix =
+    isChinese
+      ? language === "zh-CN" ? "计价模型" : "計價模型"
+      : "Pricing model";
+  const sessionsSuffix = isChinese ? "个 session" : "sessions";
   const breakdownPrefix =
-    language === "zh-TW" ? "輸入/快取/輸出/推理" : "Input/cached/output/reasoning";
+    isChinese
+      ? language === "zh-CN" ? "输入/缓存/输出/推理" : "輸入/快取/輸出/推理"
+      : "Input/cached/output/reasoning";
 
   return {
     sourceLabel,
