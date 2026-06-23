@@ -12,12 +12,18 @@ const providers: NormalizedProviderUsage[] = [
     session: {
       label: "Session",
       percent: 35,
+      displayPercent: 35,
+      percentLabel: "35%",
+      barMode: "used",
       resetLabel: "2026-01-25 05:00 UTC",
       level: "normal",
     },
     weekly: {
       label: "Weekly",
       percent: 22,
+      displayPercent: 22,
+      percentLabel: "22%",
+      barMode: "used",
       resetLabel: "2026-01-31 01:00 UTC",
       level: "normal",
     },
@@ -30,12 +36,18 @@ const providers: NormalizedProviderUsage[] = [
     session: {
       label: "Session",
       percent: 0,
+      displayPercent: 0,
+      percentLabel: "0%",
+      barMode: "used",
       resetLabel: "Unavailable",
       level: "normal",
     },
     weekly: {
       label: "Weekly",
       percent: 0,
+      displayPercent: 0,
+      percentLabel: "0%",
+      barMode: "used",
       resetLabel: "Unavailable",
       level: "normal",
     },
@@ -50,18 +62,27 @@ const localCodexProvider: NormalizedProviderUsage = {
   session: {
     label: "Daily",
     percent: 42,
+    displayPercent: 42,
+    percentLabel: "42%",
+    barMode: "used",
     resetLabel: "2026-06-24 00:00 UTC",
     level: "normal",
   },
   weekly: {
     label: "Weekly",
     percent: 68,
+    displayPercent: 68,
+    percentLabel: "68%",
+    barMode: "used",
     resetLabel: "2026-06-29 00:00 UTC",
     level: "normal",
   },
   monthly: {
     label: "Monthly",
     percent: 12,
+    displayPercent: 12,
+    percentLabel: "12%",
+    barMode: "used",
     resetLabel: "2026-07-01 00:00 UTC",
     level: "normal",
   },
@@ -75,6 +96,33 @@ const localCodexProvider: NormalizedProviderUsage = {
     tokenBreakdownLabel: "Input/cached/output/reasoning 798.4M / 739.5M / 3.3M / 1M",
   },
   lastUpdated: "2026-06-23T02:22:38.325Z",
+};
+
+const remainingCodexProvider: NormalizedProviderUsage = {
+  ...localCodexProvider,
+  session: {
+    ...localCodexProvider.session,
+    percent: 42,
+    displayPercent: 58,
+    percentLabel: "Remaining 58%",
+    barMode: "remaining",
+  },
+  weekly: {
+    ...localCodexProvider.weekly,
+    percent: 68,
+    displayPercent: 32,
+    percentLabel: "Remaining 32%",
+    barMode: "remaining",
+  },
+  monthly: localCodexProvider.monthly
+    ? {
+        ...localCodexProvider.monthly,
+        percent: 12,
+        displayPercent: 88,
+        percentLabel: "Remaining 88%",
+        barMode: "remaining",
+      }
+    : undefined,
 };
 
 describe("UsagePanel", () => {
@@ -261,5 +309,31 @@ describe("UsagePanel", () => {
     expect(screen.getByText("42%")).toBeInTheDocument();
     expect(screen.getByText("68%")).toBeInTheDocument();
     expect(screen.getByText("12%")).toBeInTheDocument();
+  });
+
+  it("renders Codex remaining usage labels and right-aligned bars when configured", async () => {
+    const rendererModule = await import("./UsagePanel");
+    const UsagePanel = Reflect.get(rendererModule, "UsagePanel");
+
+    expect(typeof UsagePanel).toBe("function");
+
+    if (typeof UsagePanel !== "function") {
+      return;
+    }
+
+    const { container } = render(
+      <UsagePanel
+        mode="expanded"
+        providers={[remainingCodexProvider]}
+        language="en"
+        loading={false}
+        lastUpdatedLabel="Updated just now"
+      />,
+    );
+
+    expect(screen.getByText("Remaining 58%")).toBeInTheDocument();
+    expect(screen.getByText("Remaining 32%")).toBeInTheDocument();
+    expect(screen.getByText("Remaining 88%")).toBeInTheDocument();
+    expect(container.querySelector(".metric-row__bar--remaining")).toBeInTheDocument();
   });
 });

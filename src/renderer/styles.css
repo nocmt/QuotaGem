@@ -41,6 +41,8 @@
   --metric-warning-end: #d7bb79;
   --metric-danger-start: #b46872;
   --metric-danger-end: #dea0a7;
+  --metric-remaining-start: #7184d6;
+  --metric-remaining-end: #b8cbff;
 }
 
 * {
@@ -287,11 +289,29 @@ select {
   background: rgba(var(--panel-border-rgb), 0.28);
 }
 
+.metric-row__bar--remaining,
+.compact-metric__bar--remaining {
+  display: flex;
+  justify-content: flex-end;
+  background: rgba(var(--panel-codex-rgb), 0.18);
+  box-shadow: inset 0 0 0 1px rgba(var(--panel-codex-rgb), 0.1);
+}
+
 .metric-row__fill,
 .compact-metric__fill {
   height: 100%;
   border-radius: inherit;
   background: linear-gradient(90deg, var(--metric-normal-start), var(--metric-normal-end));
+}
+
+.metric-row__fill--remaining,
+.compact-metric__fill--remaining {
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    var(--metric-remaining-start),
+    var(--metric-remaining-end)
+  );
 }
 
 .metric-row__fill--normal,

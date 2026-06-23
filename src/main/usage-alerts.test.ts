@@ -27,6 +27,9 @@ function createState({
         session: {
           label: "Session",
           percent: sessionPercent,
+          displayPercent: sessionPercent,
+          percentLabel: `${sessionPercent}%`,
+          barMode: "used",
           resetLabel: "Soon",
           level:
             sessionPercent >= 90
@@ -38,6 +41,9 @@ function createState({
         weekly: {
           label: "Weekly",
           percent: weeklyPercent,
+          displayPercent: weeklyPercent,
+          percentLabel: `${weeklyPercent}%`,
+          barMode: "used",
           resetLabel: "Later",
           level:
             weeklyPercent >= 90
@@ -71,6 +77,7 @@ function createState({
       codexDailyLimitUsd: 10,
       codexWeeklyLimitUsd: 50,
       codexMonthlyLimitUsd: 200,
+      codexShowRemainingUsage: false,
     },
   };
 }

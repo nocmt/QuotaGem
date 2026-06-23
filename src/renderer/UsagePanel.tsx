@@ -98,12 +98,18 @@ export function UsagePanel({
                     language={language}
                     label={provider.session.label}
                     percent={provider.session.percent}
+                    displayPercent={provider.session.displayPercent}
+                    percentLabel={provider.session.percentLabel}
+                    barMode={provider.session.barMode}
                     resetLabel={provider.session.resetLabel}
                   />
                   <CompactMetric
                     language={language}
                     label={provider.weekly.label}
                     percent={provider.weekly.percent}
+                    displayPercent={provider.weekly.displayPercent}
+                    percentLabel={provider.weekly.percentLabel}
+                    barMode={provider.weekly.barMode}
                     resetLabel={provider.weekly.resetLabel}
                   />
                   {provider.monthly && (
@@ -111,6 +117,9 @@ export function UsagePanel({
                       language={language}
                       label={provider.monthly.label}
                       percent={provider.monthly.percent}
+                      displayPercent={provider.monthly.displayPercent}
+                      percentLabel={provider.monthly.percentLabel}
+                      barMode={provider.monthly.barMode}
                       resetLabel={provider.monthly.resetLabel}
                     />
                   )}
@@ -119,6 +128,9 @@ export function UsagePanel({
                       language={language}
                       label={provider.thirdPartySession.label}
                       percent={provider.thirdPartySession.percent}
+                      displayPercent={provider.thirdPartySession.displayPercent}
+                      percentLabel={provider.thirdPartySession.percentLabel}
+                      barMode={provider.thirdPartySession.barMode}
                       resetLabel={provider.thirdPartySession.resetLabel}
                     />
                   )}
@@ -127,6 +139,9 @@ export function UsagePanel({
                       language={language}
                       label={provider.thirdPartyWeekly.label}
                       percent={provider.thirdPartyWeekly.percent}
+                      displayPercent={provider.thirdPartyWeekly.displayPercent}
+                      percentLabel={provider.thirdPartyWeekly.percentLabel}
+                      barMode={provider.thirdPartyWeekly.barMode}
                       resetLabel={provider.thirdPartyWeekly.resetLabel}
                     />
                   )}
@@ -227,6 +242,9 @@ export function UsagePanel({
                 language={language}
                 label={provider.session.label}
                 percent={provider.session.percent}
+                displayPercent={provider.session.displayPercent}
+                percentLabel={provider.session.percentLabel}
+                barMode={provider.session.barMode}
                 resetLabel={provider.session.resetLabel}
                 level={provider.session.level}
               />
@@ -234,6 +252,9 @@ export function UsagePanel({
                 language={language}
                 label={provider.weekly.label}
                 percent={provider.weekly.percent}
+                displayPercent={provider.weekly.displayPercent}
+                percentLabel={provider.weekly.percentLabel}
+                barMode={provider.weekly.barMode}
                 resetLabel={provider.weekly.resetLabel}
                 level={provider.weekly.level}
               />
@@ -242,6 +263,9 @@ export function UsagePanel({
                   language={language}
                   label={provider.monthly.label}
                   percent={provider.monthly.percent}
+                  displayPercent={provider.monthly.displayPercent}
+                  percentLabel={provider.monthly.percentLabel}
+                  barMode={provider.monthly.barMode}
                   resetLabel={provider.monthly.resetLabel}
                   level={provider.monthly.level}
                 />
@@ -251,6 +275,9 @@ export function UsagePanel({
                   language={language}
                   label={provider.thirdPartySession.label}
                   percent={provider.thirdPartySession.percent}
+                  displayPercent={provider.thirdPartySession.displayPercent}
+                  percentLabel={provider.thirdPartySession.percentLabel}
+                  barMode={provider.thirdPartySession.barMode}
                   resetLabel={provider.thirdPartySession.resetLabel}
                   level={provider.thirdPartySession.level}
                 />
@@ -260,6 +287,9 @@ export function UsagePanel({
                   language={language}
                   label={provider.thirdPartyWeekly.label}
                   percent={provider.thirdPartyWeekly.percent}
+                  displayPercent={provider.thirdPartyWeekly.displayPercent}
+                  percentLabel={provider.thirdPartyWeekly.percentLabel}
+                  barMode={provider.thirdPartyWeekly.barMode}
                   resetLabel={provider.thirdPartyWeekly.resetLabel}
                   level={provider.thirdPartyWeekly.level}
                 />
@@ -276,12 +306,18 @@ function ProviderMetric({
   language,
   label,
   percent,
+  displayPercent,
+  percentLabel,
+  barMode,
   resetLabel,
   level,
 }: {
   language: WidgetLanguage;
   label: string;
   percent: number;
+  displayPercent: number;
+  percentLabel: string;
+  barMode: "used" | "remaining";
   resetLabel: string;
   level: "normal" | "warning" | "danger";
 }) {
@@ -289,19 +325,19 @@ function ProviderMetric({
     <div className="metric-row">
       <div className="metric-row__copy">
         <span className="metric-row__label">{label}</span>
-        <strong className="metric-row__value">{Math.round(percent)}%</strong>
+        <strong className="metric-row__value">{percentLabel}</strong>
       </div>
       <div
-        className="metric-row__bar"
+        className={`metric-row__bar${barMode === "remaining" ? " metric-row__bar--remaining" : ""}`}
         role="progressbar"
-        aria-label={`${label}: ${Math.round(percent)}%`}
+        aria-label={`${label}: ${percentLabel}`}
         aria-valuemin={0}
         aria-valuemax={100}
-        aria-valuenow={Math.round(Math.min(percent, 100))}
+        aria-valuenow={Math.round(Math.min(displayPercent, 100))}
       >
         <div
-          className={`metric-row__fill metric-row__fill--${level}`}
-          style={{ width: `${Math.min(percent, 100)}%` }}
+          className={`metric-row__fill metric-row__fill--${level}${barMode === "remaining" ? " metric-row__fill--remaining" : ""}`}
+          style={{ width: `${Math.min(displayPercent, 100)}%` }}
         />
       </div>
       <div className="metric-row__footer">
@@ -316,11 +352,17 @@ function CompactMetric({
   language,
   label,
   percent,
+  displayPercent,
+  percentLabel,
+  barMode,
   resetLabel,
 }: {
   language: WidgetLanguage;
   label: string;
   percent: number;
+  displayPercent: number;
+  percentLabel: string;
+  barMode: "used" | "remaining";
   resetLabel: string;
 }) {
   const level = getUsageLevel(percent);
@@ -328,19 +370,19 @@ function CompactMetric({
     <div className="compact-metric">
       <div className="compact-metric__header">
         <span className="compact-metric__label">{label}</span>
-        <strong className="compact-metric__value">{Math.round(percent)}%</strong>
+        <strong className="compact-metric__value">{percentLabel}</strong>
       </div>
       <div
-        className="compact-metric__bar"
+        className={`compact-metric__bar${barMode === "remaining" ? " compact-metric__bar--remaining" : ""}`}
         role="progressbar"
-        aria-label={`${label}: ${Math.round(percent)}%`}
+        aria-label={`${label}: ${percentLabel}`}
         aria-valuemin={0}
         aria-valuemax={100}
-        aria-valuenow={Math.round(Math.min(percent, 100))}
+        aria-valuenow={Math.round(Math.min(displayPercent, 100))}
       >
         <div
-          className={`compact-metric__fill compact-metric__fill--${level}`}
-          style={{ width: `${Math.min(percent, 100)}%` }}
+          className={`compact-metric__fill compact-metric__fill--${level}${barMode === "remaining" ? " compact-metric__fill--remaining" : ""}`}
+          style={{ width: `${Math.min(displayPercent, 100)}%` }}
         />
       </div>
       <div className="compact-metric__footer">

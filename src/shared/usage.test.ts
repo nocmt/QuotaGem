@@ -37,12 +37,18 @@ describe("normalizeProviderUsage", () => {
       session: {
         label: "Session",
         percent: 42,
+        displayPercent: 42,
+        percentLabel: "42%",
+        barMode: "used",
         resetLabel: "2026-01-25 05:00 UTC",
         level: "normal",
       },
       weekly: {
         label: "Weekly",
         percent: 18,
+        displayPercent: 18,
+        percentLabel: "18%",
+        barMode: "used",
         resetLabel: "2026-01-31 13:20 UTC",
         level: "normal",
       },
@@ -81,6 +87,7 @@ describe("normalizeProviderUsage", () => {
 
     expect(normalized.session.resetLabel).toBe("2026-03-29 01:40 PM UTC");
     expect(normalized.weekly.level).toBe("warning");
+    expect(normalized.session.percentLabel).toBe("12%");
   });
 
   it("supports alternate date formats for reset labels", async () => {
@@ -152,6 +159,43 @@ describe("normalizeProviderUsage", () => {
     expect(normalized.weekly.level).toBe("danger");
   });
 
+  it("can format Codex as remaining usage without changing raw alert percentages", async () => {
+    const usageModule = await import("./usage");
+    const normalizeProviderUsage = Reflect.get(
+      usageModule,
+      "normalizeProviderUsage",
+    );
+
+    expect(typeof normalizeProviderUsage).toBe("function");
+
+    if (typeof normalizeProviderUsage !== "function") {
+      return;
+    }
+
+    const snapshot: ProviderUsageSnapshot = {
+      provider: "codex",
+      displayName: "Codex",
+      sessionPercent: 42,
+      sessionResetAt: "2026-01-25T05:00:00.000Z",
+      weeklyPercent: 18,
+      weeklyResetAt: "2026-01-31T13:20:00.000Z",
+      lastUpdated: "2026-03-28T02:00:00.000Z",
+    };
+
+    const normalized = normalizeProviderUsage(snapshot, {
+      language: "zh-CN",
+      timeDisplay: "utc",
+      timeFormat: "24h",
+      codexShowRemainingUsage: true,
+    });
+
+    expect(normalized.session.percent).toBe(42);
+    expect(normalized.session.displayPercent).toBe(58);
+    expect(normalized.session.percentLabel).toBe("剩余 58%");
+    expect(normalized.session.barMode).toBe("remaining");
+    expect(normalized.weekly.displayPercent).toBe(82);
+  });
+
   it("formats local Codex token and cost details", async () => {
     const usageModule = await import("./usage");
     const normalizeProviderUsage = Reflect.get(
@@ -204,8 +248,10 @@ describe("normalizeProviderUsage", () => {
 
     expect(normalized.session.label).toBe("Daily");
     expect(normalized.weekly.percent).toBe(12);
+    expect(normalized.weekly.displayPercent).toBe(12);
     expect(normalized.monthly?.label).toBe("Monthly");
     expect(normalized.monthly?.percent).toBe(4);
+    expect(normalized.monthly?.percentLabel).toBe("4%");
     expect(normalized.localUsage).toEqual({
       sourceLabel: "Local Codex data",
       totalTokensLabel: "5.3K tokens",

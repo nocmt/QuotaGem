@@ -50,18 +50,27 @@ export interface NormalizedProviderUsage {
   session: {
     label: string;
     percent: number;
+    displayPercent: number;
+    percentLabel: string;
+    barMode: "used" | "remaining";
     resetLabel: string;
     level: "normal" | "warning" | "danger";
   };
   weekly: {
     label: string;
     percent: number;
+    displayPercent: number;
+    percentLabel: string;
+    barMode: "used" | "remaining";
     resetLabel: string;
     level: "normal" | "warning" | "danger";
   };
   monthly?: {
     label: string;
     percent: number;
+    displayPercent: number;
+    percentLabel: string;
+    barMode: "used" | "remaining";
     resetLabel: string;
     level: "normal" | "warning" | "danger";
   };
@@ -69,12 +78,18 @@ export interface NormalizedProviderUsage {
   thirdPartySession?: {
     label: string;
     percent: number;
+    displayPercent: number;
+    percentLabel: string;
+    barMode: "used" | "remaining";
     resetLabel: string;
     level: "normal" | "warning" | "danger";
   };
   thirdPartyWeekly?: {
     label: string;
     percent: number;
+    displayPercent: number;
+    percentLabel: string;
+    barMode: "used" | "remaining";
     resetLabel: string;
     level: "normal" | "warning" | "danger";
   };
@@ -121,10 +136,13 @@ export function normalizeProviderUsage(
     warningThreshold?: number;
     dangerThreshold?: number;
     locale?: string;
+    codexShowRemainingUsage?: boolean;
   },
 ): NormalizedProviderUsage {
   const thresholds = normalizeUsageThresholds(options);
   const isAgy = snapshot.provider === "agy";
+  const showRemainingUsage =
+    snapshot.provider === "codex" && options.codexShowRemainingUsage === true;
   const lang = options.language;
   const isChinese = isChineseLanguage(lang);
 
@@ -140,6 +158,11 @@ export function normalizeProviderUsage(
     ? {
         label: isChinese ? "每月" : "Monthly",
         percent: snapshot.monthlyPercent,
+        ...formatUsageDisplayMetric(
+          lang,
+          snapshot.monthlyPercent,
+          showRemainingUsage,
+        ),
         resetLabel: formatResetDisplay(
           snapshot.monthlyResetAt ?? null,
           options.language,
@@ -159,6 +182,11 @@ export function normalizeProviderUsage(
         ? lang === "zh-CN" ? "Claude/GPT 5小时" : "Claude/GPT 5小時"
         : "Claude/GPT 5h",
       percent: snapshot.thirdPartySessionPercent,
+      ...formatUsageDisplayMetric(
+        lang,
+        snapshot.thirdPartySessionPercent,
+        false,
+      ),
       resetLabel: formatResetDisplay(
         snapshot.thirdPartySessionResetAt ?? null,
         options.language,
@@ -178,6 +206,11 @@ export function normalizeProviderUsage(
         ? lang === "zh-CN" ? "Claude/GPT 每周" : "Claude/GPT 每週"
         : "Claude/GPT Weekly",
       percent: snapshot.thirdPartyWeeklyPercent,
+      ...formatUsageDisplayMetric(
+        lang,
+        snapshot.thirdPartyWeeklyPercent,
+        false,
+      ),
       resetLabel: formatResetDisplay(
         snapshot.thirdPartyWeeklyResetAt ?? null,
         options.language,
@@ -197,6 +230,11 @@ export function normalizeProviderUsage(
     session: {
       label: sessionLabel,
       percent: snapshot.sessionPercent,
+      ...formatUsageDisplayMetric(
+        lang,
+        snapshot.sessionPercent,
+        showRemainingUsage,
+      ),
       resetLabel: formatResetDisplay(
         snapshot.sessionResetAt,
         options.language,
@@ -210,6 +248,11 @@ export function normalizeProviderUsage(
     weekly: {
       label: weeklyLabel,
       percent: snapshot.weeklyPercent,
+      ...formatUsageDisplayMetric(
+        lang,
+        snapshot.weeklyPercent,
+        showRemainingUsage,
+      ),
       resetLabel: formatResetDisplay(
         snapshot.weeklyResetAt,
         options.language,
@@ -227,6 +270,39 @@ export function normalizeProviderUsage(
       ? formatLocalUsage(snapshot.localUsage, options.language)
       : undefined,
     lastUpdated: snapshot.lastUpdated,
+  };
+}
+
+function formatUsageDisplayMetric(
+  language: WidgetLanguage,
+  usedPercent: number,
+  showRemainingUsage: boolean,
+): {
+  displayPercent: number;
+  percentLabel: string;
+  barMode: "used" | "remaining";
+} {
+  const clampedUsedPercent = Math.min(Math.max(usedPercent, 0), 100);
+
+  if (!showRemainingUsage) {
+    return {
+      displayPercent: clampedUsedPercent,
+      percentLabel: `${Math.round(clampedUsedPercent)}%`,
+      barMode: "used",
+    };
+  }
+
+  const remainingPercent = Math.min(
+    Math.max(100 - clampedUsedPercent, 0),
+    100,
+  );
+
+  return {
+    displayPercent: remainingPercent,
+    percentLabel: t(language, "remainingPercent", {
+      percent: Math.round(remainingPercent),
+    }),
+    barMode: "remaining",
   };
 }
 

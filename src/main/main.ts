@@ -79,6 +79,7 @@ const store = new Store<AppStoreShape>({
     codexDailyLimitUsd: 10,
     codexWeeklyLimitUsd: 50,
     codexMonthlyLimitUsd: 200,
+    codexShowRemainingUsage: false,
   },
 });
 
@@ -603,6 +604,10 @@ app.whenReady().then(() => {
       store.set(
         "codexMonthlyLimitUsd",
         normalizeCodexUsdLimit(preferences.codexMonthlyLimitUsd),
+      );
+      store.set(
+        "codexShowRemainingUsage",
+        preferences.codexShowRemainingUsage,
       );
       syncLaunchAtLoginPreference(
         app,

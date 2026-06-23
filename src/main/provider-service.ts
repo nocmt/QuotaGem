@@ -60,6 +60,7 @@ export interface AppStoreShape {
   codexDailyLimitUsd?: number;
   codexWeeklyLimitUsd?: number;
   codexMonthlyLimitUsd?: number;
+  codexShowRemainingUsage?: boolean;
 }
 
 interface BuildDashboardStateOptions {
@@ -130,6 +131,7 @@ export async function buildDashboardState(
         dateFormat: store.get("dateFormat", "iso"),
         warningThreshold: thresholds.warningThreshold,
         dangerThreshold: thresholds.dangerThreshold,
+        codexShowRemainingUsage: store.get("codexShowRemainingUsage", false),
       }),
     ),
     lastUpdatedLabel: buildLastUpdatedLabel(snapshots, {
@@ -161,6 +163,7 @@ export async function buildDashboardState(
       codexDailyLimitUsd: store.get("codexDailyLimitUsd", 10),
       codexWeeklyLimitUsd: store.get("codexWeeklyLimitUsd", 50),
       codexMonthlyLimitUsd: store.get("codexMonthlyLimitUsd", 200),
+      codexShowRemainingUsage: store.get("codexShowRemainingUsage", false),
     },
   };
 }

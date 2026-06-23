@@ -37,16 +37,48 @@ const DEFAULT_PROVIDERS: NormalizedProviderUsage[] = [
     provider: "claude",
     displayName: "Claude",
     health: "unavailable",
-    session: { label: "Session", percent: 0, resetLabel: "Unavailable", level: "normal" },
-    weekly: { label: "Weekly", percent: 0, resetLabel: "Unavailable", level: "normal" },
+    session: {
+      label: "Session",
+      percent: 0,
+      displayPercent: 0,
+      percentLabel: "0%",
+      barMode: "used",
+      resetLabel: "Unavailable",
+      level: "normal",
+    },
+    weekly: {
+      label: "Weekly",
+      percent: 0,
+      displayPercent: 0,
+      percentLabel: "0%",
+      barMode: "used",
+      resetLabel: "Unavailable",
+      level: "normal",
+    },
     lastUpdated: "",
   },
   {
     provider: "codex",
     displayName: "Codex",
     health: "unavailable",
-    session: { label: "Session", percent: 0, resetLabel: "Unavailable", level: "normal" },
-    weekly: { label: "Weekly", percent: 0, resetLabel: "Unavailable", level: "normal" },
+    session: {
+      label: "Session",
+      percent: 0,
+      displayPercent: 0,
+      percentLabel: "0%",
+      barMode: "used",
+      resetLabel: "Unavailable",
+      level: "normal",
+    },
+    weekly: {
+      label: "Weekly",
+      percent: 0,
+      displayPercent: 0,
+      percentLabel: "0%",
+      barMode: "used",
+      resetLabel: "Unavailable",
+      level: "normal",
+    },
     lastUpdated: "",
   },
 ];
@@ -90,6 +122,7 @@ function UsageDashboardApp() {
       codexDailyLimitUsd: 10,
       codexWeeklyLimitUsd: 50,
       codexMonthlyLimitUsd: 200,
+      codexShowRemainingUsage: false,
     },
   });
   const [loading, setLoading] = useState(true);
@@ -602,6 +635,20 @@ function UsageDashboardApp() {
                     <option value="official">{t(language, "codexDataSourceOfficial")}</option>
                     <option value="local">{t(language, "codexDataSourceLocal")}</option>
                   </select>
+                </label>
+                <label className="settings-field settings-field--checkbox">
+                  <span>{t(language, "codexShowRemainingUsage")}</span>
+                  <input
+                    className="settings-checkbox"
+                    type="checkbox"
+                    checked={draftPreferences.codexShowRemainingUsage}
+                    onChange={(event) => {
+                      setDraftPreferences((current) => ({
+                        ...current,
+                        codexShowRemainingUsage: event.target.checked,
+                      }));
+                    }}
+                  />
                 </label>
                 {draftPreferences.codexDataSource === "local" ? (
                   <>

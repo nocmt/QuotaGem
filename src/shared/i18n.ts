@@ -63,6 +63,8 @@ type TranslationKey =
   | "codexDailyLimit"
   | "codexWeeklyLimit"
   | "codexMonthlyLimit"
+  | "codexShowRemainingUsage"
+  | "remainingPercent"
   | "settingsGeneralTab"
   | "settingsCodexTab"
   | "settingsClaudeTab"
@@ -160,6 +162,8 @@ const translations: Record<WidgetLanguage, Record<TranslationKey, string>> = {
     codexDailyLimit: "Daily limit ($)",
     codexWeeklyLimit: "Weekly limit ($)",
     codexMonthlyLimit: "Monthly limit ($)",
+    codexShowRemainingUsage: "Show remaining usage",
+    remainingPercent: "Remaining {percent}%",
     settingsGeneralTab: "General",
     settingsCodexTab: "Codex",
     settingsClaudeTab: "Claude",
@@ -258,6 +262,8 @@ const translations: Record<WidgetLanguage, Record<TranslationKey, string>> = {
     codexDailyLimit: "每日限額 ($)",
     codexWeeklyLimit: "每週限額 ($)",
     codexMonthlyLimit: "每月限額 ($)",
+    codexShowRemainingUsage: "顯示剩餘用量",
+    remainingPercent: "剩餘 {percent}%",
     settingsGeneralTab: "通用",
     settingsCodexTab: "Codex",
     settingsClaudeTab: "Claude",
@@ -356,6 +362,8 @@ const translations: Record<WidgetLanguage, Record<TranslationKey, string>> = {
     codexDailyLimit: "每日限额 ($)",
     codexWeeklyLimit: "每周限额 ($)",
     codexMonthlyLimit: "每月限额 ($)",
+    codexShowRemainingUsage: "显示剩余用量",
+    remainingPercent: "剩余 {percent}%",
     settingsGeneralTab: "通用",
     settingsCodexTab: "Codex",
     settingsClaudeTab: "Claude",

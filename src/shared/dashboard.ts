@@ -28,6 +28,7 @@ export interface WidgetPreferences {
   codexDailyLimitUsd: number;
   codexWeeklyLimitUsd: number;
   codexMonthlyLimitUsd: number;
+  codexShowRemainingUsage: boolean;
 }
 
 export interface UsageDashboardState {

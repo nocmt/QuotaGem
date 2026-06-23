@@ -23,6 +23,7 @@ describe("i18n", () => {
     expect(t("zh-CN", "settingsGeneralTab")).toBe("通用");
     expect(t("zh-CN", "settingsClaudeTab")).toBe("Claude");
     expect(t("zh-CN", "generalAppearanceTab")).toBe("外观");
+    expect(t("zh-CN", "codexShowRemainingUsage")).toBe("显示剩余用量");
   });
 
   it("maps system locales to the expected widget language", () => {

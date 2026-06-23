@@ -17,12 +17,18 @@ function createDashboardState(
         session: {
           label: "Session",
           percent: 10,
+          displayPercent: 10,
+          percentLabel: "10%",
+          barMode: "used",
           resetLabel: "Soon",
           level: "normal",
         },
         weekly: {
           label: "Weekly",
           percent: 20,
+          displayPercent: 20,
+          percentLabel: "20%",
+          barMode: "used",
           resetLabel: "Later",
           level: "normal",
         },
@@ -51,6 +57,7 @@ function createDashboardState(
       codexDailyLimitUsd: 10,
       codexWeeklyLimitUsd: 50,
       codexMonthlyLimitUsd: 200,
+      codexShowRemainingUsage: false,
       ...overrides,
     },
   };
@@ -296,6 +303,7 @@ describe("App", () => {
     const codexDataSource = await screen.findByLabelText("Codex data source");
 
     await userEvent.selectOptions(codexDataSource, "local");
+    await userEvent.click(screen.getByLabelText("Show remaining usage"));
 
     const providerMultiplier = await screen.findByLabelText(
       "Provider multiplier: x1.0",
@@ -319,6 +327,7 @@ describe("App", () => {
           codexDailyLimitUsd: 12.5,
           codexWeeklyLimitUsd: 60,
           codexMonthlyLimitUsd: 240,
+          codexShowRemainingUsage: true,
         }),
       );
     });
