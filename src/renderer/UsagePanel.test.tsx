@@ -514,6 +514,32 @@ describe("UsagePanel", () => {
     expect(container.querySelector(".usage-history__line")).not.toBeInTheDocument();
   });
 
+  it("hides the wide-panel history provider switcher when only one provider is visible", async () => {
+    const rendererModule = await import("./UsagePanel");
+    const UsagePanel = Reflect.get(rendererModule, "UsagePanel");
+
+    expect(typeof UsagePanel).toBe("function");
+
+    if (typeof UsagePanel !== "function") {
+      return;
+    }
+
+    const { container } = render(
+      <UsagePanel
+        mode="compact"
+        providers={[localCodexProvider]}
+        language="en"
+        loading={false}
+        lastUpdatedLabel="Updated just now"
+      />,
+    );
+
+    expect(screen.getByText("Today: 1.8M ($1.02)")).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "Today: 1.8M ($1.02)" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Codex" })).not.toBeInTheDocument();
+    expect(container.querySelector(".usage-history__segmented")).not.toBeInTheDocument();
+  });
+
   it("shows an empty state when the selected wide-panel history provider has no daily token history", async () => {
     const rendererModule = await import("./UsagePanel");
     const UsagePanel = Reflect.get(rendererModule, "UsagePanel");

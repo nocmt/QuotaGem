@@ -565,21 +565,23 @@ function UsageHistoryChart({
             </span>
           )}
         </div>
-        <div className="usage-history__segmented" role="group">
-          {providers.map((provider) => (
-            <button
-              key={provider.provider}
-              className={`usage-history__segment${provider.provider === selectedProvider.provider ? " usage-history__segment--active" : ""}`}
-              type="button"
-              aria-pressed={provider.provider === selectedProvider.provider}
-              onClick={() => {
-                onSelectedProviderChange(provider.provider);
-              }}
-            >
-              {getHistoryProviderLabel(provider)}
-            </button>
-          ))}
-        </div>
+        {providers.length > 1 ? (
+          <div className="usage-history__segmented" role="group">
+            {providers.map((provider) => (
+              <button
+                key={provider.provider}
+                className={`usage-history__segment${provider.provider === selectedProvider.provider ? " usage-history__segment--active" : ""}`}
+                type="button"
+                aria-pressed={provider.provider === selectedProvider.provider}
+                onClick={() => {
+                  onSelectedProviderChange(provider.provider);
+                }}
+              >
+                {getHistoryProviderLabel(provider)}
+              </button>
+            ))}
+          </div>
+        ) : null}
       </div>
       {localUsage ? (
         <div
